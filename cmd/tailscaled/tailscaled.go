@@ -55,7 +55,6 @@ import (
 	"tailscale.com/util/multierr"
 	"tailscale.com/util/osshare"
 	"tailscale.com/version"
-	"tailscale.com/version/distro"
 	"tailscale.com/wgengine"
 	"tailscale.com/wgengine/monitor"
 	"tailscale.com/wgengine/netstack"
@@ -64,38 +63,38 @@ import (
 
 // defaultTunName returns the default tun device name for the platform.
 func defaultTunName() string {
-	switch runtime.GOOS {
-	case "openbsd":
-		return "tun"
-	case "windows":
-		return "Tailscale"
-	case "darwin":
-		// "utun" is recognized by wireguard-go/tun/tun_darwin.go
-		// as a magic value that uses/creates any free number.
-		return "utun"
-	case "linux":
-		switch distro.Get() {
-		case distro.Synology:
-			// Try TUN, but fall back to userspace networking if needed.
-			// See https://github.com/tailscale/tailscale-synology/issues/35
-			return "tailscale0,userspace-networking"
-		case distro.Gokrazy:
-			// Gokrazy doesn't yet work in tun mode because the whole
-			// Gokrazy thing is no C code, and Tailscale currently
-			// depends on the iptables binary for Linux's
-			// wgengine/router.
-			// But on Gokrazy there's no legacy iptables, so we could use netlink
-			// to program nft-iptables directly. It just isn't done yet;
-			// see https://github.com/tailscale/tailscale/issues/391
-			//
-			// But Gokrazy does have the tun module built-in, so users
-			// can still run --tun=tailscale0 if they wish, if they
-			// arrange for iptables to be present or run in "tailscale
-			// up --netfilter-mode=off" mode, perhaps. Untested.
-			return "userspace-networking"
-		}
+	// switch runtime.GOOS {
+	// case "openbsd":
+	// 	return "tun"
+	// case "windows":
+	// 	return "Tailscale"
+	// case "darwin":
+	// 	// "utun" is recognized by wireguard-go/tun/tun_darwin.go
+	// 	// as a magic value that uses/creates any free number.
+	// 	return "utun"
+	// case "linux":
+	// 	switch distro.Get() {
+	// 	case distro.Synology:
+	// 		// Try TUN, but fall back to userspace networking if needed.
+	// 		// See https://github.com/tailscale/tailscale-synology/issues/35
+	// 		return "tailscale0,userspace-networking"
+	// 	case distro.Gokrazy:
+	// 		// Gokrazy doesn't yet work in tun mode because the whole
+	// 		// Gokrazy thing is no C code, and Tailscale currently
+	// 		// depends on the iptables binary for Linux's
+	// 		// wgengine/router.
+	// 		// But on Gokrazy there's no legacy iptables, so we could use netlink
+	// 		// to program nft-iptables directly. It just isn't done yet;
+	// 		// see https://github.com/tailscale/tailscale/issues/391
+	// 		//
+	// 		// But Gokrazy does have the tun module built-in, so users
+	// 		// can still run --tun=tailscale0 if they wish, if they
+	// 		// arrange for iptables to be present or run in "tailscale
+	// 		// up --netfilter-mode=off" mode, perhaps. Untested.
+	// 		return "userspace-networking"
+	// 	}
 
-	}
+	// }
 	return "tailscale0"
 }
 
@@ -110,9 +109,9 @@ func defaultPort() uint16 {
 			return uint16(p)
 		}
 	}
-	if envknob.GOOS() == "windows" {
-		return 41641
-	}
+	// if envknob.GOOS() == "windows" {
+	// 	return 41641
+	// }
 	return 0
 }
 
@@ -202,10 +201,10 @@ func main() {
 		os.Exit(0)
 	}
 
-	if runtime.GOOS == "darwin" && os.Getuid() != 0 && !strings.Contains(args.tunname, "userspace-networking") && !args.cleanup {
-		log.SetFlags(0)
-		log.Fatalf("tailscaled requires root; use sudo tailscaled (or use --tun=userspace-networking)")
-	}
+	// if runtime.GOOS == "darwin" && os.Getuid() != 0 && !strings.Contains(args.tunname, "userspace-networking") && !args.cleanup {
+	// 	log.SetFlags(0)
+	// 	log.Fatalf("tailscaled requires root; use sudo tailscaled (or use --tun=userspace-networking)")
+	// }
 
 	if args.socketpath == "" && runtime.GOOS != "windows" {
 		log.SetFlags(0)
@@ -242,30 +241,30 @@ func main() {
 }
 
 func trySynologyMigration(p string) error {
-	if runtime.GOOS != "linux" || distro.Get() != distro.Synology {
-		return nil
-	}
+	// if runtime.GOOS != "linux" || distro.Get() != distro.Synology {
+	// 	return nil
+	// }
 
-	fi, err := os.Stat(p)
-	if err == nil && fi.Size() > 0 || !os.IsNotExist(err) {
-		return err
-	}
-	// File is empty or doesn't exist, try reading from the old path.
+	// fi, err := os.Stat(p)
+	// if err == nil && fi.Size() > 0 || !os.IsNotExist(err) {
+	// 	return err
+	// }
+	// // File is empty or doesn't exist, try reading from the old path.
 
-	const oldPath = "/var/packages/Tailscale/etc/tailscaled.state"
-	if _, err := os.Stat(oldPath); err != nil {
-		if os.IsNotExist(err) {
-			return nil
-		}
-		return err
-	}
+	// const oldPath = "/var/packages/Tailscale/etc/tailscaled.state"
+	// if _, err := os.Stat(oldPath); err != nil {
+	// 	if os.IsNotExist(err) {
+	// 		return nil
+	// 	}
+	// 	return err
+	// }
 
-	if err := os.Chown(oldPath, os.Getuid(), os.Getgid()); err != nil {
-		return err
-	}
-	if err := os.Rename(oldPath, p); err != nil {
-		return err
-	}
+	// if err := os.Chown(oldPath, os.Getuid(), os.Getgid()); err != nil {
+	// 	return err
+	// }
+	// if err := os.Rename(oldPath, p); err != nil {
+	// 	return err
+	// }
 	return nil
 }
 
@@ -571,15 +570,15 @@ func handleSubnetsInNetstack() bool {
 	if v, ok := envknob.LookupBool("TS_DEBUG_NETSTACK_SUBNETS"); ok {
 		return v
 	}
-	if distro.Get() == distro.Synology {
-		return true
-	}
-	switch runtime.GOOS {
-	case "windows", "darwin", "freebsd", "openbsd":
-		// Enable on Windows and tailscaled-on-macOS (this doesn't
-		// affect the GUI clients), and on FreeBSD.
-		return true
-	}
+	// if distro.Get() == distro.Synology {
+	// 	return true
+	// }
+	// switch runtime.GOOS {
+	// case "windows", "darwin", "freebsd", "openbsd":
+	// 	// Enable on Windows and tailscaled-on-macOS (this doesn't
+	// 	// affect the GUI clients), and on FreeBSD.
+	// 	return true
+	// }
 	return false
 }
 
@@ -603,18 +602,18 @@ func tryEngine(logf logger.Logf, linkMon *monitor.Mon, dialer *tsdial.Dialer, na
 		}
 	}
 	if onlyNetstack {
-		if runtime.GOOS == "linux" && distro.Get() == distro.Synology {
-			// On Synology in netstack mode, still init a DNS
-			// manager (directManager) to avoid the health check
-			// warnings in 'tailscale status' about DNS base
-			// configuration being unavailable (from the noop
-			// manager). More in Issue 4017.
-			// TODO(bradfitz): add a Synology-specific DNS manager.
-			conf.DNS, err = dns.NewOSConfigurator(logf, "") // empty interface name
-			if err != nil {
-				return nil, false, fmt.Errorf("dns.NewOSConfigurator: %w", err)
-			}
-		}
+		// if runtime.GOOS == "linux" && distro.Get() == distro.Synology {
+		// 	// On Synology in netstack mode, still init a DNS
+		// 	// manager (directManager) to avoid the health check
+		// 	// warnings in 'tailscale status' about DNS base
+		// 	// configuration being unavailable (from the noop
+		// 	// manager). More in Issue 4017.
+		// 	// TODO(bradfitz): add a Synology-specific DNS manager.
+		// 	conf.DNS, err = dns.NewOSConfigurator(logf, "") // empty interface name
+		// 	if err != nil {
+		// 		return nil, false, fmt.Errorf("dns.NewOSConfigurator: %w", err)
+		// 	}
+		// }
 	} else {
 		dev, devName, err := tstunNew(logf, name)
 		if err != nil {

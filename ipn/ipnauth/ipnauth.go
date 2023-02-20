@@ -117,11 +117,11 @@ func LookupUserFromID(logf logger.Logf, uid string) (*user.User, error) {
 //
 // TODO(bradfitz): rename it? Also make Windows use this.
 func (ci *ConnIdentity) IsReadonlyConn(operatorUID string, logf logger.Logf) bool {
-	if runtime.GOOS == "windows" {
-		// Windows doesn't need/use this mechanism, at least yet. It
-		// has a different last-user-wins auth model.
-		return false
-	}
+	// if runtime.GOOS == "windows" {
+	// 	// Windows doesn't need/use this mechanism, at least yet. It
+	// 	// has a different last-user-wins auth model.
+	// 	return false
+	// }
 	const ro = true
 	const rw = false
 	if !safesocket.PlatformUsesPeerCreds() {

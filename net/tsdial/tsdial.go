@@ -11,7 +11,6 @@ import (
 	"net"
 	"net/http"
 	"net/netip"
-	"runtime"
 	"strings"
 	"sync"
 	"syscall"
@@ -226,7 +225,7 @@ func (d *Dialer) userDialResolve(ctx context.Context, network, addr string) (net
 	}
 
 	var r net.Resolver
-	if exitDNSDoH != "" && runtime.GOOS != "windows" { // Windows: https://github.com/golang/go/issues/33097
+	if exitDNSDoH != "" { // Windows: https://github.com/golang/go/issues/33097
 		r.PreferGo = true
 		r.Dial = func(ctx context.Context, network, address string) (net.Conn, error) {
 			return &dohConn{

@@ -556,10 +556,10 @@ func (l *Logger) encodeText(buf []byte, skipClientTime bool, procID uint32, proc
 	overhead += 12
 
 	// Put a sanity cap on buf's size.
-	max := 16 << 10
-	if l.lowMem {
-		max = 4 << 10
-	}
+	max := 4 << 10
+	// if l.lowMem {
+	// 	max = 4 << 10
+	// }
 	var nTruncated int
 	if len(buf) > max {
 		nTruncated = len(buf) - max

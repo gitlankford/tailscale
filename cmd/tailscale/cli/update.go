@@ -32,7 +32,6 @@ import (
 	"tailscale.com/util/must"
 	"tailscale.com/util/winutil"
 	"tailscale.com/version"
-	"tailscale.com/version/distro"
 )
 
 var updateCmd = &ffcli.Command{
@@ -128,26 +127,26 @@ func newUpdater() (*updater, error) {
 	default:
 		return nil, fmt.Errorf("unknown track %q; must be 'stable' or 'unstable'", up.track)
 	}
-	switch runtime.GOOS {
-	case "windows":
-		up.update = up.updateWindows
-	case "linux":
-		switch distro.Get() {
-		case distro.Synology:
-			up.update = up.updateSynology
-		case distro.Debian: // includes Ubuntu
-			up.update = up.updateDebLike
-		}
-	case "darwin":
-		switch {
-		case !version.IsSandboxedMacOS():
-			return nil, errors.New("The 'update' command is not yet supported on this platform; see https://github.com/tailscale/tailscale/wiki/Tailscaled-on-macOS/ for now")
-		case strings.HasSuffix(os.Getenv("HOME"), "/io.tailscale.ipn.macsys/Data"):
-			up.update = up.updateMacSys
-		default:
-			return nil, errors.New("This is the macOS App Store version of Tailscale; update in the App Store, or see https://tailscale.com/kb/1083/install-unstable/ to use TestFlight or to install the non-App Store version")
-		}
-	}
+	// switch runtime.GOOS {
+	// case "windows":
+	// 	up.update = up.updateWindows
+	// case "linux":
+	// 	switch distro.Get() {
+	// 	case distro.Synology:
+	// 		up.update = up.updateSynology
+	// 	case distro.Debian: // includes Ubuntu
+	up.update = up.updateDebLike
+	// 	}
+	// case "darwin":
+	// 	switch {
+	// 	case !version.IsSandboxedMacOS():
+	// 		return nil, errors.New("The 'update' command is not yet supported on this platform; see https://github.com/tailscale/tailscale/wiki/Tailscaled-on-macOS/ for now")
+	// 	case strings.HasSuffix(os.Getenv("HOME"), "/io.tailscale.ipn.macsys/Data"):
+	// 		up.update = up.updateMacSys
+	// 	default:
+	// 		return nil, errors.New("This is the macOS App Store version of Tailscale; update in the App Store, or see https://tailscale.com/kb/1083/install-unstable/ to use TestFlight or to install the non-App Store version")
+	// 	}
+	// }
 	if up.update == nil {
 		return nil, errors.New("The 'update' command is not supported on this platform; see https://tailscale.com/kb/1067/update/")
 	}

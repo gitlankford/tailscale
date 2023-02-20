@@ -16,7 +16,6 @@ import (
 	"net"
 	"net/http"
 	"net/netip"
-	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -841,12 +840,12 @@ func (c *Client) GetReport(ctx context.Context, dm *tailcfg.DERPMap) (_ *Report,
 		c.curState = nil
 	}()
 
-	if runtime.GOOS == "js" {
-		if err := c.runHTTPOnlyChecks(ctx, last, rs, dm); err != nil {
-			return nil, err
-		}
-		return c.finishAndStoreReport(rs, dm), nil
-	}
+	// if runtime.GOOS == "js" {
+	// 	if err := c.runHTTPOnlyChecks(ctx, last, rs, dm); err != nil {
+	// 		return nil, err
+	// 	}
+	// 	return c.finishAndStoreReport(rs, dm), nil
+	// }
 
 	ifState, err := interfaces.GetState()
 	if err != nil {

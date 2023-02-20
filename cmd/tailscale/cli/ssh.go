@@ -13,7 +13,6 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
@@ -21,7 +20,6 @@ import (
 	"tailscale.com/ipn/ipnstate"
 	"tailscale.com/net/tsaddr"
 	"tailscale.com/paths"
-	"tailscale.com/version"
 )
 
 var sshCmd = &ffcli.Command{
@@ -48,9 +46,9 @@ The 'tailscale ssh' wrapper adds a few things:
 }
 
 func runSSH(ctx context.Context, args []string) error {
-	if runtime.GOOS == "darwin" && version.IsSandboxedMacOS() && !envknob.UseWIPCode() {
-		return errors.New("The 'tailscale ssh' subcommand is not available on sandboxed macOS builds.\nUse the regular 'ssh' client instead.")
-	}
+	// if runtime.GOOS == "darwin" && version.IsSandboxedMacOS() && !envknob.UseWIPCode() {
+	// 	return errors.New("The 'tailscale ssh' subcommand is not available on sandboxed macOS builds.\nUse the regular 'ssh' client instead.")
+	// }
 	if len(args) == 0 {
 		return errors.New("usage: ssh [user@]<host>")
 	}
@@ -109,18 +107,18 @@ func runSSH(ctx context.Context, args []string) error {
 	// https://github.com/tailscale/tailscale/issues/4529
 	// So don't use it for now. MagicDNS is usually working on macOS anyway
 	// and they're not in userspace mode, so 'nc' isn't very useful.
-	if runtime.GOOS != "darwin" {
-		socketArg := ""
-		if rootArgs.socket != "" && rootArgs.socket != paths.DefaultTailscaledSocket() {
-			socketArg = fmt.Sprintf("--socket=%q", rootArgs.socket)
-		}
-
-		argv = append(argv,
-			"-o", fmt.Sprintf("ProxyCommand %q %s nc %%h %%p",
-				tailscaleBin,
-				socketArg,
-			))
+	// if runtime.GOOS != "darwin" {
+	socketArg := ""
+	if rootArgs.socket != "" && rootArgs.socket != paths.DefaultTailscaledSocket() {
+		socketArg = fmt.Sprintf("--socket=%q", rootArgs.socket)
 	}
+
+	argv = append(argv,
+		"-o", fmt.Sprintf("ProxyCommand %q %s nc %%h %%p",
+			tailscaleBin,
+			socketArg,
+		))
+	// }
 
 	// Explicitly rebuild the user@host argument rather than
 	// passing it through.  In general, the use of OpenSSH's ssh

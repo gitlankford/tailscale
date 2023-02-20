@@ -12,7 +12,6 @@ import (
 	"runtime"
 
 	"golang.org/x/sys/unix"
-	"tailscale.com/version/distro"
 )
 
 func init() {
@@ -23,19 +22,19 @@ func statePath() string {
 	switch runtime.GOOS {
 	case "linux":
 		return "/var/lib/tailscale/tailscaled.state"
-	case "freebsd", "openbsd":
-		return "/var/db/tailscale/tailscaled.state"
-	case "darwin":
-		return "/Library/Tailscale/tailscaled.state"
+	// case "freebsd", "openbsd":
+	// 	return "/var/db/tailscale/tailscaled.state"
+	// case "darwin":
+	// 	return "/Library/Tailscale/tailscaled.state"
 	default:
 		return ""
 	}
 }
 
 func stateFileUnix() string {
-	if distro.Get() == distro.Gokrazy {
-		return "/perm/tailscaled/tailscaled.state"
-	}
+	// if distro.Get() == distro.Gokrazy {
+	// 	return "/perm/tailscaled/tailscaled.state"
+	// }
 	path := statePath()
 	if path == "" {
 		return ""

@@ -6,7 +6,6 @@ package neterror
 
 import (
 	"errors"
-	"runtime"
 	"syscall"
 )
 
@@ -24,20 +23,20 @@ func TreatAsLostUDP(err error) bool {
 	if err == nil {
 		return false
 	}
-	switch runtime.GOOS {
-	case "linux":
-		// Linux, while not documented in the man page,
-		// returns EPERM when there's an OUTPUT rule with -j
-		// DROP or -j REJECT.  We use this very specific
-		// Linux+EPERM check rather than something super broad
-		// like net.Error.Temporary which could be anything.
-		//
-		// For now we only do this on Linux, as such outgoing
-		// firewall violations mapping to syscall errors
-		// hasn't yet been observed on other OSes.
-		return errors.Is(err, errEPERM)
-	}
-	return false
+	// switch runtime.GOOS {
+	// case "linux":
+	// Linux, while not documented in the man page,
+	// returns EPERM when there's an OUTPUT rule with -j
+	// DROP or -j REJECT.  We use this very specific
+	// Linux+EPERM check rather than something super broad
+	// like net.Error.Temporary which could be anything.
+	//
+	// For now we only do this on Linux, as such outgoing
+	// firewall violations mapping to syscall errors
+	// hasn't yet been observed on other OSes.
+	return errors.Is(err, errEPERM)
+	// }
+	// return false
 }
 
 var packetWasTruncated func(error) bool // non-nil on Windows at least

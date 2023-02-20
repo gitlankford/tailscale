@@ -9,7 +9,6 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strconv"
 
 	"golang.org/x/sys/unix"
@@ -21,12 +20,12 @@ func init() {
 			// No sudo, just check the env.
 			return os.Getenv("SSH_CLIENT")
 		}
-		if runtime.GOOS != "linux" {
-			// TODO(maisem): implement this for other platforms. It's not clear
-			// if there is a way to get the environment for a given process on
-			// darwin and bsd.
-			return ""
-		}
+		// if runtime.GOOS != "linux" {
+		// 	// TODO(maisem): implement this for other platforms. It's not clear
+		// 	// if there is a way to get the environment for a given process on
+		// 	// darwin and bsd.
+		// 	return ""
+		// }
 		// SID is the session ID of the user's login session.
 		// It is also the process ID of the original shell that the user logged in with.
 		// We only need to check the environment of that process.

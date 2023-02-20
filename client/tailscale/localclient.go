@@ -19,7 +19,6 @@ import (
 	"net/netip"
 	"net/url"
 	"os/exec"
-	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -924,10 +923,10 @@ func getServeConfigFromJSON(body []byte) (sc *ipn.ServeConfig, err error) {
 //
 // It ends in a punctuation. See caller.
 func tailscaledConnectHint() string {
-	if runtime.GOOS != "linux" {
-		// TODO(bradfitz): flesh this out
-		return "not running?"
-	}
+	// if runtime.GOOS != "linux" {
+	// 	// TODO(bradfitz): flesh this out
+	// 	return "not running?"
+	// }
 	out, err := exec.Command("systemctl", "show", "tailscaled.service", "--no-page", "--property", "LoadState,ActiveState,SubState").Output()
 	if err != nil {
 		return "not running?"

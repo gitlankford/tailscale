@@ -15,7 +15,6 @@ import (
 	"net"
 	"net/netip"
 	"os"
-	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -338,43 +337,43 @@ func (r *Resolver) HandleExitNodeDNSQuery(ctx context.Context, q []byte, from ne
 		return marshalResponse(resp)
 	}
 
-	switch runtime.GOOS {
-	default:
-		return nil, errors.New("unsupported exit node OS")
-	case "windows", "android":
-		return handleExitNodeDNSQueryWithNetPkg(ctx, r.logf, nil, resp)
-	case "darwin":
-		// /etc/resolv.conf is a lie and only says one upstream DNS
-		// but for now that's probably good enough. Later we'll
-		// want to blend in everything from scutil --dns.
-		fallthrough
-	case "linux", "freebsd", "openbsd", "illumos":
-		nameserver, err := stubResolverForOS()
-		if err != nil {
-			r.logf("stubResolverForOS: %v", err)
-			metricDNSExitProxyErrorResolvConf.Add(1)
-			return nil, err
-		}
-		// TODO: more than 1 resolver from /etc/resolv.conf?
-
-		var resolvers []resolverAndDelay
-		if nameserver == tsaddr.TailscaleServiceIP() || nameserver == tsaddr.TailscaleServiceIPv6() {
-			// If resolv.conf says 100.100.100.100, it's coming right back to us anyway
-			// so avoid the loop through the kernel and just do what we
-			// would've done anyway. By not passing any resolvers, the forwarder
-			// will use its default ones from our DNS config.
-		} else {
-			resolvers = []resolverAndDelay{{
-				name: &dnstype.Resolver{Addr: net.JoinHostPort(nameserver.String(), "53")},
-			}}
-		}
-
-		err = r.forwarder.forwardWithDestChan(ctx, packet{q, from}, ch, resolvers...)
-		if err != nil {
-			metricDNSExitProxyErrorForward.Add(1)
-			return nil, err
-		}
+	// switch runtime.GOOS {
+	// default:
+	// 	return nil, errors.New("unsupported exit node OS")
+	// case "windows", "android":
+	// 	return handleExitNodeDNSQueryWithNetPkg(ctx, r.logf, nil, resp)
+	// case "darwin":
+	// 	// /etc/resolv.conf is a lie and only says one upstream DNS
+	// 	// but for now that's probably good enough. Later we'll
+	// 	// want to blend in everything from scutil --dns.
+	// 	fallthrough
+	// case "linux", "freebsd", "openbsd", "illumos":
+	nameserver, err := stubResolverForOS()
+	if err != nil {
+		r.logf("stubResolverForOS: %v", err)
+		metricDNSExitProxyErrorResolvConf.Add(1)
+		return nil, err
 	}
+	// TODO: more than 1 resolver from /etc/resolv.conf?
+
+	var resolvers []resolverAndDelay
+	if nameserver == tsaddr.TailscaleServiceIP() || nameserver == tsaddr.TailscaleServiceIPv6() {
+		// If resolv.conf says 100.100.100.100, it's coming right back to us anyway
+		// so avoid the loop through the kernel and just do what we
+		// would've done anyway. By not passing any resolvers, the forwarder
+		// will use its default ones from our DNS config.
+	} else {
+		resolvers = []resolverAndDelay{{
+			name: &dnstype.Resolver{Addr: net.JoinHostPort(nameserver.String(), "53")},
+		}}
+	}
+
+	err = r.forwarder.forwardWithDestChan(ctx, packet{q, from}, ch, resolvers...)
+	if err != nil {
+		metricDNSExitProxyErrorForward.Add(1)
+		return nil, err
+	}
+	// }
 	select {
 	case p, ok := <-ch:
 		if ok {

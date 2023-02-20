@@ -9,7 +9,7 @@ import (
 	"bytes"
 	"errors"
 	"os"
-	"runtime"
+	// "runtime"
 	"sync"
 	"time"
 
@@ -63,12 +63,12 @@ func (pm *pollingMon) isCloudRun() bool {
 
 func (pm *pollingMon) Receive() (message, error) {
 	d := 10 * time.Second
-	if runtime.GOOS == "android" {
-		// We'll have Android notify the link monitor to wake up earlier,
-		// so this can go very slowly there, to save battery.
-		// https://github.com/tailscale/tailscale/issues/1427
-		d = 10 * time.Minute
-	}
+	// if runtime.GOOS == "android" {
+	// 	// We'll have Android notify the link monitor to wake up earlier,
+	// 	// so this can go very slowly there, to save battery.
+	// 	// https://github.com/tailscale/tailscale/issues/1427
+	// 	d = 10 * time.Minute
+	// }
 	if pm.isCloudRun() {
 		// Cloud Run routes never change at runtime. the containers are killed within
 		// 15 minutes by default, set the interval long enough to be effectively infinite.

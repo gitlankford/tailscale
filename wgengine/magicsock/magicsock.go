@@ -20,7 +20,6 @@ import (
 	"net"
 	"net/netip"
 	"reflect"
-	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -734,7 +733,7 @@ func (c *Conn) updateEndpoints(why string) {
 		c.muCond.Broadcast()
 	}()
 	c.dlogf("[v1] magicsock: starting endpoint update (%s)", why)
-	if c.noV4Send.Load() && runtime.GOOS != "js" {
+	if c.noV4Send.Load() {
 		c.mu.Lock()
 		closed := c.closed
 		c.mu.Unlock()
@@ -1110,9 +1109,9 @@ func (c *Conn) goDerpConnect(node int) {
 func (c *Conn) determineEndpoints(ctx context.Context) ([]tailcfg.Endpoint, error) {
 	var havePortmap bool
 	var portmapExt netip.AddrPort
-	if runtime.GOOS != "js" {
-		portmapExt, havePortmap = c.portMapper.GetCachedMappingOrStartCreatingOne()
-	}
+	// if runtime.GOOS != "js" {
+	portmapExt, havePortmap = c.portMapper.GetCachedMappingOrStartCreatingOne()
+	// }
 
 	nr, err := c.updateNetInfo(ctx)
 	if err != nil {
@@ -1120,17 +1119,17 @@ func (c *Conn) determineEndpoints(ctx context.Context) ([]tailcfg.Endpoint, erro
 		return nil, err
 	}
 
-	if runtime.GOOS == "js" {
-		// TODO(bradfitz): why does control require an
-		// endpoint? Otherwise it doesn't stream map responses
-		// back.
-		return []tailcfg.Endpoint{
-			{
-				Addr: netip.MustParseAddrPort("[fe80:123:456:789::1]:12345"),
-				Type: tailcfg.EndpointLocal,
-			},
-		}, nil
-	}
+	// if runtime.GOOS == "js" {
+	// 	// TODO(bradfitz): why does control require an
+	// 	// endpoint? Otherwise it doesn't stream map responses
+	// 	// back.
+	// 	return []tailcfg.Endpoint{
+	// 		{
+	// 			Addr: netip.MustParseAddrPort("[fe80:123:456:789::1]:12345"),
+	// 			Type: tailcfg.EndpointLocal,
+	// 		},
+	// 	}, nil
+	// }
 
 	var already map[netip.AddrPort]tailcfg.EndpointType // endpoint -> how it was found
 	var eps []tailcfg.Endpoint                          // unique endpoints
@@ -1250,9 +1249,9 @@ func endpointSetsEqual(x, y []tailcfg.Endpoint) bool {
 
 // LocalPort returns the current IPv4 listener's port number.
 func (c *Conn) LocalPort() uint16 {
-	if runtime.GOOS == "js" {
-		return 12345
-	}
+	// if runtime.GOOS == "js" {
+	// 	return 12345
+	// }
 	laddr := c.pconn4.LocalAddr()
 	return uint16(laddr.Port)
 }
@@ -1320,9 +1319,9 @@ func (c *Conn) sendUDPBatch(addr netip.AddrPort, buffs [][]byte) (sent bool, err
 // sendUDP sends UDP packet b to ipp.
 // See sendAddr's docs on the return value meanings.
 func (c *Conn) sendUDP(ipp netip.AddrPort, b []byte) (sent bool, err error) {
-	if runtime.GOOS == "js" {
-		return false, errNoUDP
-	}
+	// if runtime.GOOS == "js" {
+	// 	return false, errNoUDP
+	// }
 	sent, err = c.sendUDPStd(ipp, b)
 	if err != nil {
 		metricSendUDPError.Add(1)
@@ -2850,12 +2849,12 @@ type connBind struct {
 
 func (c *connBind) BatchSize() int {
 	// TODO(raggi): determine by properties rather than hardcoding platform behavior
-	switch runtime.GOOS {
-	case "linux":
-		return conn.DefaultBatchSize
-	default:
-		return 1
-	}
+	// switch runtime.GOOS {
+	// case "linux":
+	return conn.DefaultBatchSize
+	// default:
+	// 	return 1
+	// }
 }
 
 // Open is called by WireGuard to create a UDP binding.
@@ -2869,9 +2868,9 @@ func (c *connBind) Open(ignoredPort uint16) ([]conn.ReceiveFunc, uint16, error) 
 	}
 	c.closed = false
 	fns := []conn.ReceiveFunc{c.receiveIPv4, c.receiveIPv6, c.receiveDERP}
-	if runtime.GOOS == "js" {
-		fns = []conn.ReceiveFunc{c.receiveDERP}
-	}
+	// if runtime.GOOS == "js" {
+	// 	fns = []conn.ReceiveFunc{c.receiveDERP}
+	// }
 	// TODO: Combine receiveIPv4 and receiveIPv6 and receiveIP into a single
 	// closure that closes over a *RebindingUDPConn?
 	return fns, c.LocalPort(), nil
@@ -3075,10 +3074,10 @@ func (c *Conn) bindSocket(ruc *RebindingUDPConn, network string, curPortFate cur
 	ruc.mu.Lock()
 	defer ruc.mu.Unlock()
 
-	if runtime.GOOS == "js" {
-		ruc.setConnLocked(newBlockForeverConn(), "")
-		return nil
-	}
+	// if runtime.GOOS == "js" {
+	// 	ruc.setConnLocked(newBlockForeverConn(), "")
+	// 	return nil
+	// }
 
 	if debugAlwaysDERP() {
 		c.logf("disabled %v per TS_DEBUG_ALWAYS_USE_DERP", network)
@@ -3297,7 +3296,7 @@ type RebindingUDPConn struct {
 // upgradePacketConn may upgrade a nettype.PacketConn to a udpConnWithBatchOps.
 func upgradePacketConn(p nettype.PacketConn, network string) nettype.PacketConn {
 	uc, ok := p.(*net.UDPConn)
-	if ok && runtime.GOOS == "linux" && (network == "udp4" || network == "udp6") {
+	if ok && (network == "udp4" || network == "udp6") {
 		// recvmmsg/sendmmsg were added in 2.6.33 but we support down to 2.6.32
 		// for old NAS devices. See https://github.com/tailscale/tailscale/issues/6807.
 		// As a cheap heuristic: if the Linux kernel starts with "2", just consider
@@ -3962,9 +3961,9 @@ func (de *endpoint) heartbeat() {
 //
 // de.mu must be held.
 func (de *endpoint) wantFullPingLocked(now mono.Time) bool {
-	if runtime.GOOS == "js" {
-		return false
-	}
+	// if runtime.GOOS == "js" {
+	// 	return false
+	// }
 	if !de.bestAddr.IsValid() || de.lastFullPing.IsZero() {
 		return true
 	}
@@ -4150,9 +4149,9 @@ const (
 )
 
 func (de *endpoint) startPingLocked(ep netip.AddrPort, now mono.Time, purpose discoPingPurpose) {
-	if runtime.GOOS == "js" {
-		return
-	}
+	// if runtime.GOOS == "js" {
+	// 	return
+	// }
 	if purpose != pingCLI {
 		st, ok := de.endpointState[ep]
 		if !ok {
@@ -4186,9 +4185,9 @@ func (de *endpoint) sendPingsLocked(now mono.Time, sendCallMeMaybe bool) {
 			de.deleteEndpointLocked(ep)
 			continue
 		}
-		if runtime.GOOS == "js" {
-			continue
-		}
+		// if runtime.GOOS == "js" {
+		// 	continue
+		// }
 		if !st.lastPing.IsZero() && now.Sub(st.lastPing) < discoPingInterval {
 			continue
 		}
@@ -4456,10 +4455,10 @@ func (st *endpointState) addPongReplyLocked(r pongReply) {
 // already sent to us via UDP, so their stateful firewall should be
 // open. Now we can Ping back and make it through.
 func (de *endpoint) handleCallMeMaybe(m *disco.CallMeMaybe) {
-	if runtime.GOOS == "js" {
-		// Nothing to do on js/wasm if we can't send UDP packets anyway.
-		return
-	}
+	// if runtime.GOOS == "js" {
+	// 	// Nothing to do on js/wasm if we can't send UDP packets anyway.
+	// 	return
+	// }
 	de.mu.Lock()
 	defer de.mu.Unlock()
 

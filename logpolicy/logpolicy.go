@@ -30,7 +30,6 @@ import (
 	"golang.org/x/term"
 	"tailscale.com/atomicfile"
 	"tailscale.com/envknob"
-	"tailscale.com/log/filelogger"
 	"tailscale.com/logtail"
 	"tailscale.com/logtail/filch"
 	"tailscale.com/net/dnscache"
@@ -47,7 +46,6 @@ import (
 	"tailscale.com/util/racebuild"
 	"tailscale.com/util/winutil"
 	"tailscale.com/version"
-	"tailscale.com/version/distro"
 )
 
 var getLogTargetOnce struct {
@@ -488,46 +486,46 @@ func NewWithConfigPath(collection, dir, cmdName string) *Policy {
 
 	cfgPath := filepath.Join(dir, fmt.Sprintf("%s.log.conf", cmdName))
 
-	if runtime.GOOS == "windows" {
-		switch cmdName {
-		case "tailscaled":
-			// Tailscale 1.14 and before stored state under %LocalAppData%
-			// (usually "C:\WINDOWS\system32\config\systemprofile\AppData\Local"
-			// when tailscaled.exe is running as a non-user system service).
-			// However it is frequently cleared for almost any reason: Windows
-			// updates, System Restore, even various System Cleaner utilities.
-			//
-			// The Windows service previously ran as tailscale-ipn.exe, so
-			// machines which ran very old versions might still have their
-			// log conf named %LocalAppData%\tailscale-ipn.log.conf
-			//
-			// Machines which started using Tailscale more recently will have
-			// %LocalAppData%\tailscaled.log.conf
-			//
-			// Attempt to migrate the log conf to C:\ProgramData\Tailscale
-			oldDir := filepath.Join(os.Getenv("LocalAppData"), "Tailscale")
+	// if runtime.GOOS == "windows" {
+	// 	switch cmdName {
+	// 	case "tailscaled":
+	// 		// Tailscale 1.14 and before stored state under %LocalAppData%
+	// 		// (usually "C:\WINDOWS\system32\config\systemprofile\AppData\Local"
+	// 		// when tailscaled.exe is running as a non-user system service).
+	// 		// However it is frequently cleared for almost any reason: Windows
+	// 		// updates, System Restore, even various System Cleaner utilities.
+	// 		//
+	// 		// The Windows service previously ran as tailscale-ipn.exe, so
+	// 		// machines which ran very old versions might still have their
+	// 		// log conf named %LocalAppData%\tailscale-ipn.log.conf
+	// 		//
+	// 		// Machines which started using Tailscale more recently will have
+	// 		// %LocalAppData%\tailscaled.log.conf
+	// 		//
+	// 		// Attempt to migrate the log conf to C:\ProgramData\Tailscale
+	// 		oldDir := filepath.Join(os.Getenv("LocalAppData"), "Tailscale")
 
-			oldPath := filepath.Join(oldDir, "tailscaled.log.conf")
-			if fi, err := os.Stat(oldPath); err != nil || !fi.Mode().IsRegular() {
-				// *Only* if tailscaled.log.conf does not exist,
-				// check for tailscale-ipn.log.conf
-				oldPathOldCmd := filepath.Join(oldDir, "tailscale-ipn.log.conf")
-				if fi, err := os.Stat(oldPathOldCmd); err == nil && fi.Mode().IsRegular() {
-					oldPath = oldPathOldCmd
-				}
-			}
+	// 		oldPath := filepath.Join(oldDir, "tailscaled.log.conf")
+	// 		if fi, err := os.Stat(oldPath); err != nil || !fi.Mode().IsRegular() {
+	// 			// *Only* if tailscaled.log.conf does not exist,
+	// 			// check for tailscale-ipn.log.conf
+	// 			oldPathOldCmd := filepath.Join(oldDir, "tailscale-ipn.log.conf")
+	// 			if fi, err := os.Stat(oldPathOldCmd); err == nil && fi.Mode().IsRegular() {
+	// 				oldPath = oldPathOldCmd
+	// 			}
+	// 		}
 
-			cfgPath = paths.TryConfigFileMigration(earlyLogf, oldPath, cfgPath)
-		case "tailscale-ipn":
-			for _, oldBase := range []string{"wg64.log.conf", "wg32.log.conf"} {
-				oldConf := filepath.Join(dir, oldBase)
-				if fi, err := os.Stat(oldConf); err == nil && fi.Mode().IsRegular() {
-					cfgPath = paths.TryConfigFileMigration(earlyLogf, oldConf, cfgPath)
-					break
-				}
-			}
-		}
-	}
+	// 		cfgPath = paths.TryConfigFileMigration(earlyLogf, oldPath, cfgPath)
+	// 	case "tailscale-ipn":
+	// 		for _, oldBase := range []string{"wg64.log.conf", "wg32.log.conf"} {
+	// 			oldConf := filepath.Join(dir, oldBase)
+	// 			if fi, err := os.Stat(oldConf); err == nil && fi.Mode().IsRegular() {
+	// 				cfgPath = paths.TryConfigFileMigration(earlyLogf, oldConf, cfgPath)
+	// 				break
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	newc, err := ConfigFromFile(cfgPath)
 	if err != nil {
@@ -577,16 +575,16 @@ func NewWithConfigPath(collection, dir, cmdName string) *Policy {
 
 	// NAS disks cannot hibernate if we're writing logs to them all the time.
 	// https://github.com/tailscale/tailscale/issues/3551
-	if runtime.GOOS == "linux" && (distro.Get() == distro.Synology || distro.Get() == distro.QNAP) {
-		tmpfsLogs := "/tmp/tailscale-logs"
-		if err := os.MkdirAll(tmpfsLogs, 0755); err == nil {
-			filchPrefix = filepath.Join(tmpfsLogs, cmdName)
-			filchOptions.MaxFileSize = 1 << 20
-		} else {
-			// not a fatal error, we can leave the log files on the spinning disk
-			log.Printf("Unable to create /tmp directory for log storage: %v\n", err)
-		}
-	}
+	// if runtime.GOOS == "linux" && (distro.Get() == distro.Synology || distro.Get() == distro.QNAP) {
+	// 	tmpfsLogs := "/tmp/tailscale-logs"
+	// 	if err := os.MkdirAll(tmpfsLogs, 0755); err == nil {
+	// 		filchPrefix = filepath.Join(tmpfsLogs, cmdName)
+	// 		filchOptions.MaxFileSize = 1 << 20
+	// 	} else {
+	// 		// not a fatal error, we can leave the log files on the spinning disk
+	// 		log.Printf("Unable to create /tmp directory for log storage: %v\n", err)
+	// 	}
+	// }
 
 	filchBuf, filchErr := filch.New(filchPrefix, filchOptions)
 	if filchBuf != nil {
@@ -599,14 +597,14 @@ func NewWithConfigPath(collection, dir, cmdName string) *Policy {
 
 	var logOutput io.Writer = lw
 
-	if runtime.GOOS == "windows" && conf.Collection == logtail.CollectionNode {
-		logID := newc.PublicID.String()
-		exe, _ := os.Executable()
-		if strings.EqualFold(filepath.Base(exe), "tailscaled.exe") {
-			diskLogf := filelogger.New("tailscale-service", logID, lw.Logf)
-			logOutput = logger.FuncWriter(diskLogf)
-		}
-	}
+	// if runtime.GOOS == "windows" && conf.Collection == logtail.CollectionNode {
+	// 	logID := newc.PublicID.String()
+	// 	exe, _ := os.Executable()
+	// 	if strings.EqualFold(filepath.Base(exe), "tailscaled.exe") {
+	// 		diskLogf := filelogger.New("tailscale-service", logID, lw.Logf)
+	// 		logOutput = logger.FuncWriter(diskLogf)
+	// 	}
+	// }
 
 	log.SetFlags(0) // other log flags are set on console, not here
 	log.SetOutput(logOutput)

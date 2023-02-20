@@ -51,7 +51,6 @@ import (
 	"tailscale.com/net/netutil"
 	"tailscale.com/net/tsaddr"
 	"tailscale.com/net/tsdial"
-	"tailscale.com/paths"
 	"tailscale.com/portlist"
 	"tailscale.com/syncs"
 	"tailscale.com/tailcfg"
@@ -3153,10 +3152,10 @@ func (b *LocalBackend) TailscaleVarRoot() string {
 	if b.varRoot != "" {
 		return b.varRoot
 	}
-	switch runtime.GOOS {
-	case "ios", "android", "darwin":
-		return paths.AppSharedDir.Load()
-	}
+	// switch runtime.GOOS {
+	// case "ios", "android", "darwin":
+	// 	return paths.AppSharedDir.Load()
+	// }
 	return ""
 }
 

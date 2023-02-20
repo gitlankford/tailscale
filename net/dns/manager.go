@@ -32,7 +32,7 @@ var (
 
 // maxActiveQueries returns the maximal number of DNS requests that can
 // be running.
-const maxActiveQueries = 256
+const maxActiveQueries = 64
 
 // We use file-ignore below instead of ignore because on some platforms,
 // the lint exception is necessary and on others it is not,
@@ -168,9 +168,9 @@ func (m *Manager) compileConfig(cfg Config) (rcfg resolver.Config, ocfg OSConfig
 
 	// Similarly, the OS always gets search paths.
 	ocfg.SearchDomains = cfg.SearchDomains
-	if runtime.GOOS == "windows" {
-		ocfg.Hosts = compileHostEntries(cfg)
-	}
+	// if runtime.GOOS == "windows" {
+	// 	ocfg.Hosts = compileHostEntries(cfg)
+	// }
 
 	// Deal with trivial configs first.
 	switch {
@@ -242,7 +242,7 @@ func (m *Manager) compileConfig(cfg Config) (rcfg resolver.Config, ocfg OSConfig
 	// selectively answer ExtraRecords, and ignore other DNS traffic. As a
 	// workaround, we read the existing default resolver configuration and use
 	// that as the forwarder for all DNS traffic that quad-100 doesn't handle.
-	const isApple = runtime.GOOS == "darwin" || runtime.GOOS == "ios"
+	const isApple = false // runtime.GOOS == "darwin" || runtime.GOOS == "ios"
 
 	if isApple || !m.os.SupportsSplitDNS() {
 		// If the OS can't do native split-dns, read out the underlying

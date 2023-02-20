@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"sync"
 
@@ -63,9 +62,9 @@ func New(logf logger.Logf, path string) (ipn.StateStore, error) {
 			return sf(logf, path)
 		}
 	}
-	if runtime.GOOS == "windows" {
-		path = TryWindowsAppDataMigration(logf, path)
-	}
+	// if runtime.GOOS == "windows" {
+	// 	path = TryWindowsAppDataMigration(logf, path)
+	// }
 	return NewFileStore(logf, path)
 }
 

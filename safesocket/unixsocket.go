@@ -6,20 +6,17 @@
 package safesocket
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
 )
 
 func connect(s *ConnectionStrategy) (net.Conn, error) {
-	if runtime.GOOS == "js" {
-		return nil, errors.New("safesocket.Connect not yet implemented on js/wasm")
-	}
+	// if runtime.GOOS == "js" {
+	// 	return nil, errors.New("safesocket.Connect not yet implemented on js/wasm")
+	// }
 	return net.Dial("unix", s.path)
 }
 
@@ -73,13 +70,13 @@ func listen(path string) (net.Listener, error) {
 }
 
 func tailscaledRunningUnderLaunchd() bool {
-	if runtime.GOOS != "darwin" {
-		return false
-	}
-	plist, err := exec.Command("launchctl", "list", "com.tailscale.tailscaled").Output()
-	_ = plist // parse it? https://github.com/DHowett/go-plist if we need something.
-	running := err == nil
-	return running
+	// if runtime.GOOS != "darwin" {
+	return false
+	// }
+	// plist, err := exec.Command("launchctl", "list", "com.tailscale.tailscaled").Output()
+	// _ = plist // parse it? https://github.com/DHowett/go-plist if we need something.
+	// running := err == nil
+	// return running
 }
 
 // socketPermissionsForOS returns the permissions to use for the

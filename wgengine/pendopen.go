@@ -5,12 +5,10 @@ package wgengine
 
 import (
 	"fmt"
-	"runtime"
 	"time"
 
 	"tailscale.com/net/flowtrack"
 	"tailscale.com/net/packet"
-	"tailscale.com/net/tsaddr"
 	"tailscale.com/net/tstun"
 	"tailscale.com/types/ipproto"
 	"tailscale.com/util/mak"
@@ -102,11 +100,11 @@ func (e *userspaceEngine) trackOpenPostFilterOut(pp *packet.Parsed, t *tstun.Wra
 	// Don't start timers tracking those. They won't succeed anyway. Avoids log spam
 	// like:
 	//    open-conn-track: timeout opening (100.115.73.60:52501 => 17.125.252.5:443); no associated peer node
-	if runtime.GOOS == "ios" && flow.Dst.Port() == 443 && !tsaddr.IsTailscaleIP(flow.Dst.Addr()) {
-		if _, ok := e.PeerForIP(flow.Dst.Addr()); !ok {
-			return
-		}
-	}
+	// if runtime.GOOS == "ios" && flow.Dst.Port() == 443 && !tsaddr.IsTailscaleIP(flow.Dst.Addr()) {
+	// 	if _, ok := e.PeerForIP(flow.Dst.Addr()); !ok {
+	// 		return
+	// 	}
+	// }
 
 	timer := time.AfterFunc(tcpTimeoutBeforeDebug, func() {
 		e.onOpenTimeout(flow)

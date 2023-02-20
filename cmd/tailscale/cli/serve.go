@@ -26,7 +26,6 @@ import (
 	"tailscale.com/ipn/ipnstate"
 	"tailscale.com/tailcfg"
 	"tailscale.com/util/mak"
-	"tailscale.com/version"
 )
 
 var serveCmd = newServeCommand(&serveEnv{lc: &localClient})
@@ -253,10 +252,10 @@ func (e *serveEnv) runServe(ctx context.Context, args []string) error {
 
 	switch args[1] {
 	case "path":
-		if version.IsSandboxedMacOS() {
-			// don't allow path serving for now on macOS (2022-11-15)
-			return fmt.Errorf("path serving is not supported if sandboxed on macOS")
-		}
+		// if version.IsSandboxedMacOS() {
+		// 	// don't allow path serving for now on macOS (2022-11-15)
+		// 	return fmt.Errorf("path serving is not supported if sandboxed on macOS")
+		// }
 		if !filepath.IsAbs(args[2]) {
 			fmt.Fprintf(os.Stderr, "error: path must be absolute\n\n")
 			return flag.ErrHelp

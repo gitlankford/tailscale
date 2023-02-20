@@ -20,7 +20,6 @@ import (
 	"net/url"
 	"os"
 	"reflect"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -200,13 +199,13 @@ func NewDirect(opts Options) (*Direct, error) {
 	}
 
 	httpc := opts.HTTPTestClient
-	if httpc == nil && runtime.GOOS == "js" {
-		// In js/wasm, net/http.Transport (as of Go 1.18) will
-		// only use the browser's Fetch API if you're using
-		// the DefaultClient (or a client without dial hooks
-		// etc set).
-		httpc = http.DefaultClient
-	}
+	// if httpc == nil && runtime.GOOS == "js" {
+	// 	// In js/wasm, net/http.Transport (as of Go 1.18) will
+	// 	// only use the browser's Fetch API if you're using
+	// 	// the DefaultClient (or a client without dial hooks
+	// 	// etc set).
+	// 	httpc = http.DefaultClient
+	// }
 	if httpc == nil {
 		dnsCache := &dnscache.Resolver{
 			Forward:          dnscache.Get().Forward, // use default cache's forwarder

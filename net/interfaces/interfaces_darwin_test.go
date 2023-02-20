@@ -11,7 +11,6 @@ import (
 
 	"go4.org/mem"
 	"tailscale.com/util/lineread"
-	"tailscale.com/version"
 )
 
 func TestLikelyHomeRouterIPSyscallExec(t *testing.T) {
@@ -54,12 +53,12 @@ default            link#14            UCSI         utun2
 ...
 */
 func likelyHomeRouterIPDarwinExec() (ret netip.Addr, netif string, ok bool) {
-	if version.IsMobile() {
-		// Don't try to do subprocesses on iOS. Ends up with log spam like:
-		// kernel: "Sandbox: IPNExtension(86580) deny(1) process-fork"
-		// This is why we have likelyHomeRouterIPDarwinSyscall.
-		return ret, "", false
-	}
+	// if version.IsMobile() {
+	// 	// Don't try to do subprocesses on iOS. Ends up with log spam like:
+	// 	// kernel: "Sandbox: IPNExtension(86580) deny(1) process-fork"
+	// 	// This is why we have likelyHomeRouterIPDarwinSyscall.
+	// 	return ret, "", false
+	// }
 	cmd := exec.Command("/usr/sbin/netstat", "-r", "-n", "-f", "inet")
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {

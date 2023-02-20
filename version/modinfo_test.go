@@ -7,7 +7,6 @@ import (
 	"flag"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 
@@ -37,9 +36,9 @@ func TestFindModuleInfo(t *testing.T) {
 }
 
 func exe() string {
-	if runtime.GOOS == "windows" {
-		return ".exe"
-	}
+	// if runtime.GOOS == "windows" {
+	// 	return ".exe"
+	// }
 	return ""
 }
 

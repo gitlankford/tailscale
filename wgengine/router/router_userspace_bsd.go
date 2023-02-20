@@ -10,7 +10,6 @@ import (
 	"log"
 	"net/netip"
 	"os/exec"
-	"runtime"
 
 	"github.com/tailscale/wireguard-go/tun"
 	"go4.org/netipx"
@@ -123,16 +122,16 @@ func (r *userspaceBSDRouter) Set(cfg *Config) (reterr error) {
 	}
 	for _, addr := range r.addrsToAdd(cfg.LocalAddrs) {
 		var arg []string
-		if runtime.GOOS == "freebsd" && addr.Addr().Is6() && addr.Bits() == 128 {
-			// FreeBSD rejects tun addresses of the form fc00::1/128 -> fc00::1,
-			// https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=218508
-			// Instead add our whole /48, which works because we use a /48 route.
-			// Full history: https://github.com/tailscale/tailscale/issues/1307
-			tmp := netip.PrefixFrom(addr.Addr(), 48)
-			arg = []string{"ifconfig", r.tunname, inet(tmp), tmp.String()}
-		} else {
-			arg = []string{"ifconfig", r.tunname, inet(addr), addr.String(), addr.Addr().String()}
-		}
+		// if runtime.GOOS == "freebsd" && addr.Addr().Is6() && addr.Bits() == 128 {
+		// 	// FreeBSD rejects tun addresses of the form fc00::1/128 -> fc00::1,
+		// 	// https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=218508
+		// 	// Instead add our whole /48, which works because we use a /48 route.
+		// 	// Full history: https://github.com/tailscale/tailscale/issues/1307
+		// 	tmp := netip.PrefixFrom(addr.Addr(), 48)
+		// 	arg = []string{"ifconfig", r.tunname, inet(tmp), tmp.String()}
+		// } else {
+		arg = []string{"ifconfig", r.tunname, inet(addr), addr.String(), addr.Addr().String()}
+		// }
 		out, err := cmd(arg...).CombinedOutput()
 		if err != nil {
 			r.logf("addr add failed: %v => %v\n%s", arg, err, out)
@@ -142,7 +141,7 @@ func (r *userspaceBSDRouter) Set(cfg *Config) (reterr error) {
 
 	newRoutes := make(map[netip.Prefix]bool)
 	for _, route := range cfg.Routes {
-		if runtime.GOOS != "darwin" && route == tsaddr.TailscaleULARange() {
+		if route == tsaddr.TailscaleULARange() {
 			// Because we added the interface address as a /48 above,
 			// the kernel already created the Tailscale ULA route
 			// implicitly. We mustn't try to add/delete it ourselves.

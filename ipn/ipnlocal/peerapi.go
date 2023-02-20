@@ -40,7 +40,6 @@ import (
 	"tailscale.com/health"
 	"tailscale.com/hostinfo"
 	"tailscale.com/ipn"
-	"tailscale.com/logtail/backoff"
 	"tailscale.com/net/dns/resolver"
 	"tailscale.com/net/interfaces"
 	"tailscale.com/net/netaddr"
@@ -301,9 +300,9 @@ func (s *peerAPIServer) DeleteFile(baseName string) error {
 	if !ok {
 		return errors.New("bad filename")
 	}
-	var bo *backoff.Backoff
+	// var bo *backoff.Backoff
 	logf := s.b.logf
-	t0 := time.Now()
+	// t0 := time.Now()
 	for {
 		err := os.Remove(path)
 		if err != nil && !os.IsNotExist(err) {
@@ -318,18 +317,18 @@ func (s *peerAPIServer) DeleteFile(baseName string) error {
 			// So try a few times but ultimately just leave a
 			// "foo.jpg.deleted" marker file to note that it's
 			// deleted and we clean it up later.
-			if runtime.GOOS == "windows" {
-				if bo == nil {
-					bo = backoff.NewBackoff("delete-retry", logf, 1*time.Second)
-				}
-				if time.Since(t0) < 5*time.Second {
-					bo.BackOff(context.Background(), err)
-					continue
-				}
-				if err := touchFile(path + deletedSuffix); err != nil {
-					logf("peerapi: failed to leave deleted marker: %v", err)
-				}
-			}
+			// if runtime.GOOS == "windows" {
+			// 	if bo == nil {
+			// 		bo = backoff.NewBackoff("delete-retry", logf, 1*time.Second)
+			// 	}
+			// 	if time.Since(t0) < 5*time.Second {
+			// 		bo.BackOff(context.Background(), err)
+			// 		continue
+			// 	}
+			// 	if err := touchFile(path + deletedSuffix); err != nil {
+			// 		logf("peerapi: failed to leave deleted marker: %v", err)
+			// 	}
+			// }
 			logf("peerapi: failed to DeleteFile: %v", err)
 			return err
 		}
@@ -448,9 +447,9 @@ func (s *peerAPIServer) listen(ip netip.Addr, ifState *interfaces.State) (ln net
 	// But since we started intercepting it with netstack, it's not even important that
 	// we have a real kernel-level listener. So just create a dummy listener on Android
 	// and let netstack intercept it.
-	if runtime.GOOS == "android" {
-		return newFakePeerAPIListener(ip), nil
-	}
+	// if runtime.GOOS == "android" {
+	// 	return newFakePeerAPIListener(ip), nil
+	// }
 
 	ipStr := ip.String()
 
@@ -462,9 +461,9 @@ func (s *peerAPIServer) listen(ip netip.Addr, ifState *interfaces.State) (ln net
 		if err := initListenConfig(&lc, ip, ifState, s.b.dialer.TUNName()); err != nil {
 			return nil, err
 		}
-		if runtime.GOOS == "darwin" || runtime.GOOS == "ios" {
-			ipStr = ""
-		}
+		// if runtime.GOOS == "darwin" || runtime.GOOS == "ios" {
+		// 	ipStr = ""
+		// }
 	}
 
 	if wgengine.IsNetstack(s.b.e) {

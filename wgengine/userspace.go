@@ -12,7 +12,6 @@ import (
 	"io"
 	"net/netip"
 	"reflect"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -481,21 +480,21 @@ func echoRespondToAll(p *packet.Parsed, t *tstun.Wrapper) filter.Response {
 // tailscaled directly. Other packets are allowed to proceed into the
 // main ACL filter.
 func (e *userspaceEngine) handleLocalPackets(p *packet.Parsed, t *tstun.Wrapper) filter.Response {
-	if runtime.GOOS == "darwin" || runtime.GOOS == "ios" {
-		isLocalAddr, ok := e.isLocalAddr.LoadOk()
-		if !ok {
-			e.logf("[unexpected] e.isLocalAddr was nil, can't check for loopback packet")
-		} else if isLocalAddr(p.Dst.Addr()) {
-			// macOS NetworkExtension directs packets destined to the
-			// tunnel's local IP address into the tunnel, instead of
-			// looping back within the kernel network stack. We have to
-			// notice that an outbound packet is actually destined for
-			// ourselves, and loop it back into macOS.
-			t.InjectInboundCopy(p.Buffer())
-			metricReflectToOS.Add(1)
-			return filter.Drop
-		}
-	}
+	// if runtime.GOOS == "darwin" || runtime.GOOS == "ios" {
+	// 	isLocalAddr, ok := e.isLocalAddr.LoadOk()
+	// 	if !ok {
+	// 		e.logf("[unexpected] e.isLocalAddr was nil, can't check for loopback packet")
+	// 	} else if isLocalAddr(p.Dst.Addr()) {
+	// 		// macOS NetworkExtension directs packets destined to the
+	// 		// tunnel's local IP address into the tunnel, instead of
+	// 		// looping back within the kernel network stack. We have to
+	// 		// notice that an outbound packet is actually destined for
+	// 		// ourselves, and loop it back into macOS.
+	// 		t.InjectInboundCopy(p.Buffer())
+	// 		metricReflectToOS.Add(1)
+	// 		return filter.Drop
+	// 	}
+	// }
 
 	return filter.Accept
 }
@@ -1148,19 +1147,19 @@ func (e *userspaceEngine) linkChange(changed bool, cur *interfaces.State) {
 	// nukes all systemd-resolved configs. So reapply our DNS
 	// config on major link change.
 	if changed {
-		switch runtime.GOOS {
-		case "linux", "android", "ios", "darwin":
-			e.wgLock.Lock()
-			dnsCfg := e.lastDNSConfig
-			e.wgLock.Unlock()
-			if dnsCfg != nil {
-				if err := e.dns.Set(*dnsCfg); err != nil {
-					e.logf("wgengine: error setting DNS config after major link change: %v", err)
-				} else {
-					e.logf("wgengine: set DNS config again after major link change")
-				}
+		// switch runtime.GOOS {
+		// case "linux", "android", "ios", "darwin":
+		e.wgLock.Lock()
+		dnsCfg := e.lastDNSConfig
+		e.wgLock.Unlock()
+		if dnsCfg != nil {
+			if err := e.dns.Set(*dnsCfg); err != nil {
+				e.logf("wgengine: error setting DNS config after major link change: %v", err)
+			} else {
+				e.logf("wgengine: set DNS config again after major link change")
 			}
 		}
+		// }
 	}
 
 	why := "link-change-minor"

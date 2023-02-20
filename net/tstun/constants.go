@@ -12,4 +12,4 @@ package tstun
 // 1280 is the smallest MTU allowed for IPv6, which is a sensible
 // "probably works everywhere" setting until we develop proper PMTU
 // discovery.
-const DefaultMTU = 1280
+const DefaultMTU = 1420

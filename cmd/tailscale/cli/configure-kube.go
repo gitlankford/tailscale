@@ -162,11 +162,11 @@ func setKubeconfigForPeer(fqdn, filePath string) error {
 			return err
 		}
 		if err := os.Mkdir(dir, 0755); err != nil {
-			if version.IsSandboxedMacOS() && errors.Is(err, os.ErrPermission) {
-				// macOS sandboxing prevents us from creating the .kube directory
-				// in the home directory.
-				return errors.New("unable to create .kube directory in home directory, please create it manually (e.g. mkdir ~/.kube")
-			}
+			// if version.IsSandboxedMacOS() && errors.Is(err, os.ErrPermission) {
+			// 	// macOS sandboxing prevents us from creating the .kube directory
+			// 	// in the home directory.
+			// 	return errors.New("unable to create .kube directory in home directory, please create it manually (e.g. mkdir ~/.kube")
+			// }
 			return err
 		}
 	}

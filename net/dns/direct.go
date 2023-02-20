@@ -10,12 +10,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/fs"
 	"net/netip"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -24,7 +22,6 @@ import (
 	"tailscale.com/net/dns/resolvconffile"
 	"tailscale.com/types/logger"
 	"tailscale.com/util/dnsname"
-	"tailscale.com/version/distro"
 )
 
 const (
@@ -86,9 +83,9 @@ func resolvOwner(bs []byte) string {
 // isResolvedRunning reports whether systemd-resolved is running on the system,
 // even if it is not managing the system DNS settings.
 func isResolvedRunning() bool {
-	if runtime.GOOS != "linux" {
-		return false
-	}
+	// if runtime.GOOS != "linux" {
+	// 	return false
+	// }
 
 	// systemd-resolved is never installed without systemd.
 	_, err := exec.LookPath("systemctl")
@@ -257,10 +254,10 @@ func (m *directManager) rename(old, new string) error {
 		if err == nil {
 			return nil
 		}
-		if runtime.GOOS == "linux" && distro.Get() == distro.Synology {
-			// Fail fast. The fallback case below won't work anyway.
-			return err
-		}
+		// if runtime.GOOS == "linux" && distro.Get() == distro.Synology {
+		// 	// Fail fast. The fallback case below won't work anyway.
+		// 	return err
+		// }
 		m.logf("rename of %q to %q failed (%v), falling back to copy+delete", old, new, err)
 		m.renameBroken = true
 	}
@@ -340,16 +337,16 @@ func (m *directManager) checkForFileTrample() {
 }
 
 func (m *directManager) SetDNS(config OSConfig) (err error) {
-	defer func() {
-		if err != nil && errors.Is(err, fs.ErrPermission) && runtime.GOOS == "linux" &&
-			distro.Get() == distro.Synology && os.Geteuid() != 0 {
-			// On Synology (notably DSM7 where we don't run as root), ignore all
-			// DNS configuration errors for now. We don't have permission.
-			// See https://github.com/tailscale/tailscale/issues/4017
-			m.logf("ignoring SetDNS permission error on Synology (Issue 4017); was: %v", err)
-			err = nil
-		}
-	}()
+	// defer func() {
+	// 	if err != nil && errors.Is(err, fs.ErrPermission) && runtime.GOOS == "linux" &&
+	// 		distro.Get() == distro.Synology && os.Geteuid() != 0 {
+	// 		// On Synology (notably DSM7 where we don't run as root), ignore all
+	// 		// DNS configuration errors for now. We don't have permission.
+	// 		// See https://github.com/tailscale/tailscale/issues/4017
+	// 		m.logf("ignoring SetDNS permission error on Synology (Issue 4017); was: %v", err)
+	// 		err = nil
+	// 	}
+	// }()
 	m.setWant(nil) // reset our expectations before any work
 	var changed bool
 	if config.IsZero() {

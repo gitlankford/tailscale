@@ -21,7 +21,6 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
-	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -223,9 +222,9 @@ func outName(dst string) string {
 	if dst == "-" {
 		return "stdout"
 	}
-	if runtime.GOOS == "darwin" {
-		return fmt.Sprintf("%s (warning: sandboxed macOS binaries write to Library/Containers; use - to write to stdout and redirect to file instead)", dst)
-	}
+	// if runtime.GOOS == "darwin" {
+	// 	return fmt.Sprintf("%s (warning: sandboxed macOS binaries write to Library/Containers; use - to write to stdout and redirect to file instead)", dst)
+	// }
 	return dst
 }
 
@@ -295,10 +294,10 @@ func runLocalCreds(ctx context.Context, args []string) error {
 		printf("curl -u:%s http://localhost:%d/localapi/v0/status\n", token, port)
 		return nil
 	}
-	if runtime.GOOS == "windows" {
-		runLocalAPIProxy()
-		return nil
-	}
+	// if runtime.GOOS == "windows" {
+	// 	runLocalAPIProxy()
+	// 	return nil
+	// }
 	printf("curl --unix-socket %s http://local-tailscaled.sock/localapi/v0/status\n", paths.DefaultTailscaledSocket())
 	return nil
 }

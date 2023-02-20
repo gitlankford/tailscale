@@ -14,7 +14,7 @@ import (
 	"net/netip"
 	"os"
 	"os/exec"
-	"runtime"
+	// "runtime"
 	"strings"
 	"sync/atomic"
 
@@ -49,9 +49,9 @@ func likelyHomeRouterIPLinux() (ret netip.Addr, ok bool) {
 	if procNetRouteErr.Load() {
 		// If we failed to read /proc/net/route previously, don't keep trying.
 		// But if we're on Android, go into the Android path.
-		if runtime.GOOS == "android" {
-			return likelyHomeRouterIPAndroid()
-		}
+		// if runtime.GOOS == "android" {
+		// 	return likelyHomeRouterIPAndroid()
+		// }
 		return ret, false
 	}
 	lineNum := 0
@@ -93,9 +93,9 @@ func likelyHomeRouterIPLinux() (ret netip.Addr, ok bool) {
 	}
 	if err != nil {
 		procNetRouteErr.Store(true)
-		if runtime.GOOS == "android" {
-			return likelyHomeRouterIPAndroid()
-		}
+		// if runtime.GOOS == "android" {
+		// 	return likelyHomeRouterIPAndroid()
+		// }
 		log.Printf("interfaces: failed to read /proc/net/route: %v", err)
 	}
 	return ret, ret.IsValid()
@@ -142,11 +142,11 @@ func defaultRoute() (d DefaultRouteDetails, err error) {
 		d.InterfaceName = v
 		return d, nil
 	}
-	if runtime.GOOS == "android" {
-		v, err = defaultRouteInterfaceAndroidIPRoute()
-		d.InterfaceName = v
-		return d, err
-	}
+	// if runtime.GOOS == "android" {
+	// 	v, err = defaultRouteInterfaceAndroidIPRoute()
+	// 	d.InterfaceName = v
+	// 	return d, err
+	// }
 	// Issue 4038: the default route (such as on Unifi UDM Pro)
 	// might be in a non-default table, so it won't show up in
 	// /proc/net/route. Use netlink to find the default route.

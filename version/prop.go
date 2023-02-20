@@ -4,8 +4,6 @@
 package version
 
 import (
-	"os"
-	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -16,7 +14,8 @@ import (
 
 // IsMobile reports whether this is a mobile client build.
 func IsMobile() bool {
-	return runtime.GOOS == "android" || runtime.GOOS == "ios"
+	// return runtime.GOOS == "android" || runtime.GOOS == "ios"
+	return false
 }
 
 // OS returns runtime.GOOS, except instead of returning "darwin" it returns
@@ -28,12 +27,12 @@ func OS() string {
 	// differentiate them. Then a later Go release added GOOS=ios as a separate
 	// platform, but by then the "iOS" and "macOS" values we'd picked, with that
 	// exact capitalization, were already baked into databases.
-	if runtime.GOOS == "ios" {
-		return "iOS"
-	}
-	if runtime.GOOS == "darwin" {
-		return "macOS"
-	}
+	// if runtime.GOOS == "ios" {
+	// 	return "iOS"
+	// }
+	// if runtime.GOOS == "darwin" {
+	// 	return "macOS"
+	// }
 	return runtime.GOOS
 }
 
@@ -44,19 +43,19 @@ var isSandboxedMacOS lazy.SyncValue[bool]
 // and macsys (System Extension) version on macOS, and false for
 // tailscaled-on-macOS.
 func IsSandboxedMacOS() bool {
-	if runtime.GOOS != "darwin" {
-		return false
-	}
-	return isSandboxedMacOS.Get(func() bool {
-		if IsMacSysExt() {
-			return true
-		}
-		exe, err := os.Executable()
-		if err != nil {
-			return false
-		}
-		return filepath.Base(exe) == "io.tailscale.ipn.macsys.network-extension" || strings.HasSuffix(exe, "/Contents/MacOS/Tailscale") || strings.HasSuffix(exe, "/Contents/MacOS/IPNExtension")
-	})
+	// if runtime.GOOS != "darwin" {
+	return false
+	// }
+	// return isSandboxedMacOS.Get(func() bool {
+	// 	if IsMacSysExt() {
+	// 		return true
+	// 	}
+	// 	exe, err := os.Executable()
+	// 	if err != nil {
+	// 		return false
+	// 	}
+	// 	return filepath.Base(exe) == "io.tailscale.ipn.macsys.network-extension" || strings.HasSuffix(exe, "/Contents/MacOS/Tailscale") || strings.HasSuffix(exe, "/Contents/MacOS/IPNExtension")
+	// })
 }
 
 var isMacSysExt lazy.SyncValue[bool]
@@ -64,32 +63,32 @@ var isMacSysExt lazy.SyncValue[bool]
 // IsMacSysExt whether this binary is from the standalone "System
 // Extension" (a.k.a. "macsys") version of Tailscale for macOS.
 func IsMacSysExt() bool {
-	if runtime.GOOS != "darwin" {
-		return false
-	}
-	return isMacSysExt.Get(func() bool {
-		exe, err := os.Executable()
-		if err != nil {
-			return false
-		}
-		return filepath.Base(exe) == "io.tailscale.ipn.macsys.network-extension"
-	})
+	// if runtime.GOOS != "darwin" {
+	return false
+	// }
+	// return isMacSysExt.Get(func() bool {
+	// 	exe, err := os.Executable()
+	// 	if err != nil {
+	// 		return false
+	// 	}
+	// 	return filepath.Base(exe) == "io.tailscale.ipn.macsys.network-extension"
+	// })
 }
 
 var isWindowsGUI lazy.SyncValue[bool]
 
 // IsWindowsGUI reports whether the current process is the Windows GUI.
 func IsWindowsGUI() bool {
-	if runtime.GOOS != "windows" {
-		return false
-	}
-	return isWindowsGUI.Get(func() bool {
-		exe, err := os.Executable()
-		if err != nil {
-			return false
-		}
-		return strings.EqualFold(exe, "tailscale-ipn.exe") || strings.EqualFold(exe, "tailscale-ipn")
-	})
+	// if runtime.GOOS != "windows" {
+	return false
+	// }
+	// return isWindowsGUI.Get(func() bool {
+	// 	exe, err := os.Executable()
+	// 	if err != nil {
+	// 		return false
+	// 	}
+	// 	return strings.EqualFold(exe, "tailscale-ipn.exe") || strings.EqualFold(exe, "tailscale-ipn")
+	// })
 }
 
 var isUnstableBuild lazy.SyncValue[bool]

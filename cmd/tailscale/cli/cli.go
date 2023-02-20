@@ -23,7 +23,6 @@ import (
 	"tailscale.com/client/tailscale"
 	"tailscale.com/envknob"
 	"tailscale.com/paths"
-	"tailscale.com/version/distro"
 )
 
 var Stderr io.Writer = os.Stderr
@@ -48,9 +47,9 @@ func outln(a ...any) {
 
 func newFlagSet(name string) *flag.FlagSet {
 	onError := flag.ExitOnError
-	if runtime.GOOS == "js" {
-		onError = flag.ContinueOnError
-	}
+	// if runtime.GOOS == "js" {
+	// 	onError = flag.ContinueOnError
+	// }
 	fs := flag.NewFlagSet(name, onError)
 	fs.SetOutput(Stderr)
 	return fs
@@ -153,9 +152,9 @@ change in the future.
 	case slices.Contains(args, "configure"):
 		rootCmd.Subcommands = append(rootCmd.Subcommands, configureCmd)
 	}
-	if runtime.GOOS == "linux" && distro.Get() == distro.Synology {
-		rootCmd.Subcommands = append(rootCmd.Subcommands, configureHostCmd)
-	}
+	// if runtime.GOOS == "linux" && distro.Get() == distro.Synology {
+	// 	rootCmd.Subcommands = append(rootCmd.Subcommands, configureHostCmd)
+	// }
 
 	if err := rootCmd.Parse(args); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
@@ -172,7 +171,7 @@ change in the future.
 	})
 
 	err = rootCmd.Run(context.Background())
-	if tailscale.IsAccessDeniedError(err) && os.Getuid() != 0 && runtime.GOOS != "windows" {
+	if tailscale.IsAccessDeniedError(err) && os.Getuid() != 0 {
 		return fmt.Errorf("%v\n\nUse 'sudo tailscale %s' or 'tailscale up --operator=$USER' to not require root.", err, strings.Join(args, " "))
 	}
 	if errors.Is(err, flag.ErrHelp) {

@@ -23,7 +23,6 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
-	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -1468,9 +1467,9 @@ func envValFromList(env []string, wantKey string) (v string) {
 // envEq reports whether environment variable a == b for the current
 // operating system.
 func envEq(a, b string) bool {
-	if runtime.GOOS == "windows" {
-		return strings.EqualFold(a, b)
-	}
+	// if runtime.GOOS == "windows" {
+	// 	return strings.EqualFold(a, b)
+	// }
 	return a == b
 }
 

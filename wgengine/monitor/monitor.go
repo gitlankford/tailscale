@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/netip"
-	"runtime"
 	"sync"
 	"time"
 
@@ -366,7 +365,7 @@ func (m *Mon) pollWallTime() {
 //
 // We don't do this on mobile platforms for battery reasons, and because these
 // platforms don't really sleep in the same way.
-const shouldMonitorTimeJump = runtime.GOOS != "android" && runtime.GOOS != "ios"
+const shouldMonitorTimeJump = true
 
 // checkWallTimeAdvanceLocked reports whether wall time jumped more than 150% of
 // pollWallTimeInterval, indicating we probably just came out of sleep. Once a

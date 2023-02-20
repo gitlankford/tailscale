@@ -5,7 +5,6 @@ package cli
 
 import (
 	"context"
-	"runtime"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
 )
@@ -20,16 +19,16 @@ var licensesCmd = &ffcli.Command{
 
 // licensesURL returns the absolute URL containing open source license information for the current platform.
 func licensesURL() string {
-	switch runtime.GOOS {
-	case "android":
-		return "https://tailscale.com/licenses/android"
-	case "darwin", "ios":
-		return "https://tailscale.com/licenses/apple"
-	case "windows":
-		return "https://tailscale.com/licenses/windows"
-	default:
-		return "https://tailscale.com/licenses/tailscale"
-	}
+	// switch runtime.GOOS {
+	// case "android":
+	// 	return "https://tailscale.com/licenses/android"
+	// case "darwin", "ios":
+	// 	return "https://tailscale.com/licenses/apple"
+	// case "windows":
+	// 	return "https://tailscale.com/licenses/windows"
+	// default:
+	return "https://tailscale.com/licenses/tailscale"
+	// }
 }
 
 func runLicenses(ctx context.Context, args []string) error {

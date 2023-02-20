@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"net"
 	"net/netip"
-	"runtime"
 	"sort"
 	"strings"
 	"syscall"
@@ -183,9 +182,9 @@ func populateDestination(re *RouteEntry, ifs map[int]interfaces.Interface, rm *r
 	//
 	// For consistency's sake, we're going to do the same here so that we
 	// get the same values as netstat returns.
-	if runtime.GOOS == "darwin" && ip.Is6() && ip.IsMulticast() && ones > 32 {
-		ones -= 32
-	}
+	// if runtime.GOOS == "darwin" && ip.Is6() && ip.IsMulticast() && ones > 32 {
+	// 	ones -= 32
+	// }
 	re.Dst = RouteDestination{
 		Prefix: netip.PrefixFrom(ip, ones),
 		Zone:   ip.Zone(),

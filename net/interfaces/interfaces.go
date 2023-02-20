@@ -10,7 +10,6 @@ import (
 	"net"
 	"net/http"
 	"net/netip"
-	"runtime"
 	"sort"
 	"strings"
 
@@ -76,7 +75,7 @@ func isProblematicInterface(nif *net.Interface) bool {
 	// DoS each other by doing traffic amplification, both of them
 	// preferring/trying to use each other for transport. See:
 	// https://github.com/tailscale/tailscale/issues/1208
-	if strings.HasPrefix(name, "zt") || (runtime.GOOS == "windows" && strings.Contains(name, "ZeroTier")) {
+	if strings.HasPrefix(name, "zt") {
 		return true
 	}
 	return false
@@ -473,9 +472,9 @@ func (s *State) HasPAC() bool { return s != nil && s.PAC != "" }
 
 // AnyInterfaceUp reports whether any interface seems like it has Internet access.
 func (s *State) AnyInterfaceUp() bool {
-	if runtime.GOOS == "js" {
-		return true
-	}
+	// if runtime.GOOS == "js" {
+	// 	return true
+	// }
 	return s != nil && (s.HaveV4 || s.HaveV6)
 }
 
@@ -489,17 +488,17 @@ func hasTailscaleIP(pfxs []netip.Prefix) bool {
 }
 
 func isTailscaleInterface(name string, ips []netip.Prefix) bool {
-	if runtime.GOOS == "darwin" && strings.HasPrefix(name, "utun") && hasTailscaleIP(ips) {
-		// On macOS in the sandboxed app (at least as of
-		// 2021-02-25), we often see two utun devices
-		// (e.g. utun4 and utun7) with the same IPv4 and IPv6
-		// addresses. Just remove all utun devices with
-		// Tailscale IPs until we know what's happening with
-		// macOS NetworkExtensions and utun devices.
-		return true
-	}
-	return name == "Tailscale" || // as it is on Windows
-		strings.HasPrefix(name, "tailscale") // TODO: use --tun flag value, etc; see TODO in method doc
+	// if runtime.GOOS == "darwin" && strings.HasPrefix(name, "utun") && hasTailscaleIP(ips) {
+	// 	// On macOS in the sandboxed app (at least as of
+	// 	// 2021-02-25), we often see two utun devices
+	// 	// (e.g. utun4 and utun7) with the same IPv4 and IPv6
+	// 	// addresses. Just remove all utun devices with
+	// 	// Tailscale IPs until we know what's happening with
+	// 	// macOS NetworkExtensions and utun devices.
+	// 	return true
+	// }
+	// return name == "Tailscale" || // as it is on Windows
+	return strings.HasPrefix(name, "tailscale") // TODO: use --tun flag value, etc; see TODO in method doc
 }
 
 // getPAC, if non-nil, returns the current PAC file URL.

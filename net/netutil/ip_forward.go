@@ -10,7 +10,6 @@ import (
 	"net/netip"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strconv"
 	"strings"
 
@@ -58,13 +57,13 @@ func protocolsRequiredForForwarding(routes []netip.Prefix, state *interfaces.Sta
 // It returns a warning describing configuration issues if IP forwarding is
 // non-functional or partly functional.
 func CheckIPForwarding(routes []netip.Prefix, state *interfaces.State) (warn, err error) {
-	if runtime.GOOS != "linux" {
-		switch runtime.GOOS {
-		case "dragonfly", "freebsd", "netbsd", "openbsd":
-			return fmt.Errorf("Subnet routing and exit nodes only work with additional manual configuration on %v, and is not currently officially supported.", runtime.GOOS), nil
-		}
-		return nil, nil
-	}
+	// if runtime.GOOS != "linux" {
+	// 	switch runtime.GOOS {
+	// 	case "dragonfly", "freebsd", "netbsd", "openbsd":
+	// 		return fmt.Errorf("Subnet routing and exit nodes only work with additional manual configuration on %v, and is not currently officially supported.", runtime.GOOS), nil
+	// 	}
+	// 	return nil, nil
+	// }
 	const kbLink = "\nSee https://tailscale.com/kb/1104/enable-ip-forwarding/"
 	if state == nil {
 		var err error

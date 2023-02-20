@@ -6,11 +6,9 @@ package cli
 import (
 	"context"
 	"flag"
-	"runtime"
 	"strings"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
-	"tailscale.com/version/distro"
 )
 
 var configureCmd = &ffcli.Command{
@@ -31,8 +29,8 @@ services on the host to enable more Tailscale features.
 }
 
 func configureSubcommands() (out []*ffcli.Command) {
-	if runtime.GOOS == "linux" && distro.Get() == distro.Synology {
-		out = append(out, synologyConfigureCmd)
-	}
+	// if runtime.GOOS == "linux" && distro.Get() == distro.Synology {
+	// 	out = append(out, synologyConfigureCmd)
+	// }
 	return out
 }

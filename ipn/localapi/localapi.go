@@ -182,7 +182,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // validLocalHost allows either localhost or loopback IP hosts on platforms
 // that use token security.
-var validLocalHost = runtime.GOOS == "darwin" || runtime.GOOS == "ios" || runtime.GOOS == "android"
+var validLocalHost = false // runtime.GOOS == "darwin" || runtime.GOOS == "ios" || runtime.GOOS == "android"
 
 // validHost reports whether h is a valid Host header value for a LocalAPI request.
 func validHost(h string) bool {

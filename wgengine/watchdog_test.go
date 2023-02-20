@@ -4,7 +4,6 @@
 package wgengine
 
 import (
-	"runtime"
 	"testing"
 	"time"
 )
@@ -13,11 +12,11 @@ func TestWatchdog(t *testing.T) {
 	t.Parallel()
 
 	var maxWaitMultiple time.Duration = 1
-	if runtime.GOOS == "darwin" {
-		// Work around slow close syscalls on Big Sur with content filter Network Extensions installed.
-		// See https://github.com/tailscale/tailscale/issues/1598.
-		maxWaitMultiple = 15
-	}
+	// if runtime.GOOS == "darwin" {
+	// 	// Work around slow close syscalls on Big Sur with content filter Network Extensions installed.
+	// 	// See https://github.com/tailscale/tailscale/issues/1598.
+	// 	maxWaitMultiple = 15
+	// }
 
 	t.Run("default watchdog does not fire", func(t *testing.T) {
 		t.Parallel()

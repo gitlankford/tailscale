@@ -15,7 +15,6 @@ import (
 	"log"
 	"net"
 	"net/netip"
-	"runtime"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -36,14 +35,14 @@ func preferGoResolver() bool {
 	// There does not appear to be a local resolver running
 	// on iOS, and NetworkExtension is good at isolating DNS.
 	// So do not use the Go resolver on macOS/iOS.
-	if runtime.GOOS == "darwin" || runtime.GOOS == "ios" {
-		return false
-	}
+	// if runtime.GOOS == "darwin" || runtime.GOOS == "ios" {
+	// 	return false
+	// }
 
-	// The local resolver is not available on Android.
-	if runtime.GOOS == "android" {
-		return false
-	}
+	// // The local resolver is not available on Android.
+	// if runtime.GOOS == "android" {
+	// 	return false
+	// }
 
 	// Otherwise, the Go resolver is fine and slightly preferred
 	// since it's lighter, not using cgo calls & threads.
@@ -133,14 +132,14 @@ func (r *Resolver) dlogf(format string, args ...any) {
 // cloudHostResolver returns a Resolver for the current cloud hosting environment.
 // It currently only supports Google Cloud.
 func (r *Resolver) cloudHostResolver() (v *net.Resolver, ok bool) {
-	switch runtime.GOOS {
-	case "android", "ios", "darwin":
-		return nil, false
-	case "windows":
-		// TODO(bradfitz): remove this restriction once we're using Go 1.19
-		// which supports net.Resolver.PreferGo on Windows.
-		return nil, false
-	}
+	// switch runtime.GOOS {
+	// case "android", "ios", "darwin":
+	// 	return nil, false
+	// case "windows":
+	// 	// TODO(bradfitz): remove this restriction once we're using Go 1.19
+	// 	// which supports net.Resolver.PreferGo on Windows.
+	// 	return nil, false
+	// }
 	ip := cloudenv.Get().ResolverIP()
 	if ip == "" {
 		return nil, false

@@ -21,7 +21,6 @@ import (
 	"software.sslmate.com/src/go-pkcs12"
 	"tailscale.com/atomicfile"
 	"tailscale.com/ipn"
-	"tailscale.com/version"
 )
 
 var certCmd = &ffcli.Command{
@@ -106,25 +105,25 @@ func runCert(ctx context.Context, args []string) error {
 	if err != nil {
 		return err
 	}
-	needMacWarning := version.IsSandboxedMacOS()
-	macWarn := func() {
-		if !needMacWarning {
-			return
-		}
-		needMacWarning = false
-		dir := "io.tailscale.ipn.macos"
-		if version.IsMacSysExt() {
-			dir = "io.tailscale.ipn.macsys"
-		}
-		printf("Warning: the macOS CLI runs in a sandbox; this binary's filesystem writes go to $HOME/Library/Containers/%s/Data\n", dir)
-	}
+	// needMacWarning := version.IsSandboxedMacOS()
+	// macWarn := func() {
+	// 	// if !needMacWarning {
+	// 	return
+	// 	// }
+	// 	// needMacWarning = false
+	// 	// dir := "io.tailscale.ipn.macos"
+	// 	// if version.IsMacSysExt() {
+	// 	// 	dir = "io.tailscale.ipn.macsys"
+	// 	// }
+	// 	// printf("Warning: the macOS CLI runs in a sandbox; this binary's filesystem writes go to $HOME/Library/Containers/%s/Data\n", dir)
+	// }
 	if certArgs.certFile != "" {
 		certChanged, err := writeIfChanged(certArgs.certFile, certPEM, 0644)
 		if err != nil {
 			return err
 		}
 		if certArgs.certFile != "-" {
-			macWarn()
+			// macWarn()
 			if certChanged {
 				printf("Wrote public cert to %v\n", certArgs.certFile)
 			} else {
@@ -146,7 +145,7 @@ func runCert(ctx context.Context, args []string) error {
 			return err
 		}
 		if certArgs.keyFile != "-" {
-			macWarn()
+			// macWarn()
 			if keyChanged {
 				printf("Wrote private key to %v\n", dst)
 			} else {

@@ -31,7 +31,6 @@ import (
 	"tailscale.com/net/tsaddr"
 	"tailscale.com/tailcfg"
 	"tailscale.com/util/quarantine"
-	"tailscale.com/version"
 )
 
 var fileCmd = &ffcli.Command{
@@ -142,9 +141,9 @@ func runCp(ctx context.Context, args []string) error {
 		} else {
 			f, err := os.Open(fileArg)
 			if err != nil {
-				if version.IsSandboxedMacOS() {
-					return errors.New("the GUI version of Tailscale on macOS runs in a macOS sandbox that can't read files")
-				}
+				// if version.IsSandboxedMacOS() {
+				// 	return errors.New("the GUI version of Tailscale on macOS runs in a macOS sandbox that can't read files")
+				// }
 				return err
 			}
 			defer f.Close()

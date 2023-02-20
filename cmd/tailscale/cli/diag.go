@@ -9,11 +9,8 @@ import (
 	"fmt"
 	"os/exec"
 	"path/filepath"
-	"runtime"
-	"strings"
 
 	ps "github.com/mitchellh/go-ps"
-	"tailscale.com/version/distro"
 )
 
 // fixTailscaledConnectError is called when the local tailscaled has
@@ -32,28 +29,28 @@ func fixTailscaledConnectError(origErr error) error {
 			foundProc = proc
 			break
 		}
-		if runtime.GOOS == "darwin" && base == "IPNExtension" {
-			foundProc = proc
-			break
-		}
-		if runtime.GOOS == "windows" && strings.EqualFold(base, "tailscaled.exe") {
-			foundProc = proc
-			break
-		}
+		// if runtime.GOOS == "darwin" && base == "IPNExtension" {
+		// 	foundProc = proc
+		// 	break
+		// }
+		// if runtime.GOOS == "windows" && strings.EqualFold(base, "tailscaled.exe") {
+		// 	foundProc = proc
+		// 	break
+		// }
 	}
 	if foundProc == nil {
-		switch runtime.GOOS {
-		case "windows":
-			return fmt.Errorf("failed to connect to local tailscaled process; is the Tailscale service running?")
-		case "darwin":
-			return fmt.Errorf("failed to connect to local Tailscale service; is Tailscale running?")
-		case "linux":
-			var hint string
-			if isSystemdSystem() {
-				hint = " (sudo systemctl start tailscaled ?)"
-			}
-			return fmt.Errorf("failed to connect to local tailscaled; it doesn't appear to be running%s", hint)
-		}
+		// switch runtime.GOOS {
+		// case "windows":
+		// 	return fmt.Errorf("failed to connect to local tailscaled process; is the Tailscale service running?")
+		// case "darwin":
+		// 	return fmt.Errorf("failed to connect to local Tailscale service; is Tailscale running?")
+		// case "linux":
+		// 	var hint string
+		// 	if isSystemdSystem() {
+		// 		hint = " (sudo systemctl start tailscaled ?)"
+		// 	}
+		// 	return fmt.Errorf("failed to connect to local tailscaled; it doesn't appear to be running%s", hint)
+		// }
 		return fmt.Errorf("failed to connect to local tailscaled process; it doesn't appear to be running")
 	}
 	return fmt.Errorf("failed to connect to local tailscaled (which appears to be running as %v, pid %v). Got error: %w", foundProc.Executable(), foundProc.Pid(), origErr)
@@ -62,13 +59,13 @@ func fixTailscaledConnectError(origErr error) error {
 // isSystemdSystem reports whether the current machine uses systemd
 // and in particular whether the systemctl command is available.
 func isSystemdSystem() bool {
-	if runtime.GOOS != "linux" {
-		return false
-	}
-	switch distro.Get() {
-	case distro.QNAP, distro.Gokrazy, distro.Synology:
-		return false
-	}
+	// if runtime.GOOS != "linux" {
+	// 	return false
+	// }
+	// switch distro.Get() {
+	// case distro.QNAP, distro.Gokrazy, distro.Synology:
+	// 	return false
+	// }
 	_, err := exec.LookPath("systemctl")
 	return err == nil
 }

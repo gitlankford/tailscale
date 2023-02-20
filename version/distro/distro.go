@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"io"
 	"os"
-	"runtime"
 	"strconv"
 
 	"tailscale.com/types/lazy"
@@ -36,14 +35,14 @@ var distro lazy.SyncValue[Distro]
 // Get returns the current distro, or the empty string if unknown.
 func Get() Distro {
 	return distro.Get(func() Distro {
-		switch runtime.GOOS {
-		case "linux":
-			return linuxDistro()
-		case "freebsd":
-			return freebsdDistro()
-		default:
-			return Distro("")
-		}
+		// switch runtime.GOOS {
+		// case "linux":
+		return linuxDistro()
+		// case "freebsd":
+		// return freebsdDistro()
+		// default:
+		// return Distro("")
+		// }
 	})
 }
 
@@ -103,9 +102,9 @@ var dsmVersion lazy.SyncValue[int]
 //
 // If not Synology, it reports 0.
 func DSMVersion() int {
-	if runtime.GOOS != "linux" {
-		return 0
-	}
+	// if runtime.GOOS != "linux" {
+	// 	return 0
+	// }
 	return dsmVersion.Get(func() int {
 		if Get() != Synology {
 			return 0

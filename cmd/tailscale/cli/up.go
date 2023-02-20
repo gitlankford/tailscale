@@ -34,7 +34,6 @@ import (
 	"tailscale.com/tailcfg"
 	"tailscale.com/types/logger"
 	"tailscale.com/types/preftype"
-	"tailscale.com/version"
 	"tailscale.com/version/distro"
 )
 
@@ -74,14 +73,14 @@ func effectiveGOOS() string {
 // acceptRouteDefault returns the CLI's default value of --accept-routes as
 // a function of the platform it's running on.
 func acceptRouteDefault(goos string) bool {
-	switch goos {
-	case "windows":
-		return true
-	case "darwin":
-		return version.IsSandboxedMacOS()
-	default:
-		return false
-	}
+	// switch goos {
+	// case "windows":
+	// 	return true
+	// case "darwin":
+	// 	return version.IsSandboxedMacOS()
+	// default:
+	return false
+	// }
 }
 
 var upFlagSet = newUpFlagSet(effectiveGOOS(), &upArgsGlobal, "up")
