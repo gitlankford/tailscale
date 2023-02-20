@@ -308,10 +308,10 @@ func busyboxParseVersion(output string) (major, minor, patch int, err error) {
 }
 
 func useAmbientCaps() bool {
-	if distro.Get() != distro.Synology {
-		return false
-	}
-	return distro.DSMVersion() >= 7
+	// if distro.Get() != distro.Synology {
+	return false
+	// }
+	// return distro.DSMVersion() >= 7
 }
 
 var forceIPCommand = envknob.RegisterBool("TS_DEBUG_USE_IP_COMMAND")
@@ -461,9 +461,9 @@ func (r *linuxRouter) Set(cfg *Config) error {
 // reflect the new mode, and r.snatSubnetRoutes is updated to reflect
 // the current state of subnet SNATing.
 func (r *linuxRouter) setNetfilterMode(mode preftype.NetfilterMode) error {
-	if distro.Get() == distro.Synology {
-		mode = netfilterOff
-	}
+	// if distro.Get() == distro.Synology {
+	// 	mode = netfilterOff
+	// }
 	if r.netfilterMode == mode {
 		return nil
 	}

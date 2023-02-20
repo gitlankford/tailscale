@@ -61,7 +61,8 @@ import (
 	"tailscale.com/types/logger"
 	"tailscale.com/types/netmap"
 	"tailscale.com/types/persist"
-	"tailscale.com/types/preftype"
+
+	// "tailscale.com/types/preftype"
 	"tailscale.com/types/ptr"
 	"tailscale.com/types/views"
 	"tailscale.com/util/deephash"
@@ -73,7 +74,8 @@ import (
 	"tailscale.com/util/systemd"
 	"tailscale.com/util/uniq"
 	"tailscale.com/version"
-	"tailscale.com/version/distro"
+
+	// "tailscale.com/version/distro"
 	"tailscale.com/wgengine"
 	"tailscale.com/wgengine/capture"
 	"tailscale.com/wgengine/filter"
@@ -1311,7 +1313,7 @@ func (b *LocalBackend) Start(opts ipn.Options) error {
 	loggedOut := prefs.LoggedOut()
 
 	serverURL := prefs.ControlURLOrDefault()
-	if inServerMode := prefs.ForceDaemon(); inServerMode || runtime.GOOS == "windows" {
+	if inServerMode := prefs.ForceDaemon(); inServerMode {
 		b.logf("Start: serverMode=%v", inServerMode)
 	}
 	b.applyPrefsToHostinfoLocked(hostinfo, prefs)
@@ -2058,16 +2060,16 @@ func (b *LocalBackend) tellClientToBrowseToURL(url string) {
 // onClientVersion is called on MapResponse updates when a MapResponse contains
 // a non-nil ClientVersion message.
 func (b *LocalBackend) onClientVersion(v *tailcfg.ClientVersion) {
-	switch runtime.GOOS {
-	case "darwin", "ios":
-		// These auto-update well enough, and we haven't converted the
-		// ClientVersion types to Swift yet, so don't send them in ipn.Notify
-		// messages.
-	default:
-		// But everything else is a Go client and can deal with this field, even
-		// if they ignore it.
-		b.send(ipn.Notify{ClientVersion: v})
-	}
+	// switch runtime.GOOS {
+	// case "darwin", "ios":
+	// 	// These auto-update well enough, and we haven't converted the
+	// 	// ClientVersion types to Swift yet, so don't send them in ipn.Notify
+	// 	// messages.
+	// default:
+	// 	// But everything else is a Go client and can deal with this field, even
+	// 	// if they ignore it.
+	b.send(ipn.Notify{ClientVersion: v})
+	// }
 }
 
 // For testing lazy machine key generation.
@@ -2504,28 +2506,28 @@ func (b *LocalBackend) checkSSHPrefsLocked(p *ipn.Prefs) error {
 	if !p.RunSSH {
 		return nil
 	}
-	switch runtime.GOOS {
-	case "linux":
-		if distro.Get() == distro.Synology && !envknob.UseWIPCode() {
-			return errors.New("The Tailscale SSH server does not run on Synology.")
-		}
-		if distro.Get() == distro.QNAP && !envknob.UseWIPCode() {
-			return errors.New("The Tailscale SSH server does not run on QNAP.")
-		}
-		checkSELinux()
-		// otherwise okay
-	case "darwin":
-		// okay only in tailscaled mode for now.
-		if version.IsSandboxedMacOS() {
-			return errors.New("The Tailscale SSH server does not run in sandboxed Tailscale GUI builds.")
-		}
-		if !envknob.UseWIPCode() {
-			return errors.New("The Tailscale SSH server is disabled on macOS tailscaled by default. To try, set env TAILSCALE_USE_WIP_CODE=1")
-		}
-	case "freebsd", "openbsd":
-	default:
-		return errors.New("The Tailscale SSH server is not supported on " + runtime.GOOS)
-	}
+	// switch runtime.GOOS {
+	// case "linux":
+	// if distro.Get() == distro.Synology && !envknob.UseWIPCode() {
+	// 	return errors.New("The Tailscale SSH server does not run on Synology.")
+	// }
+	// if distro.Get() == distro.QNAP && !envknob.UseWIPCode() {
+	// 	return errors.New("The Tailscale SSH server does not run on QNAP.")
+	// }
+	// 	checkSELinux()
+	// 	// otherwise okay
+	// case "darwin":
+	// 	// okay only in tailscaled mode for now.
+	// 	if version.IsSandboxedMacOS() {
+	// 		return errors.New("The Tailscale SSH server does not run in sandboxed Tailscale GUI builds.")
+	// 	}
+	// 	if !envknob.UseWIPCode() {
+	// 		return errors.New("The Tailscale SSH server is disabled on macOS tailscaled by default. To try, set env TAILSCALE_USE_WIP_CODE=1")
+	// 	}
+	// case "freebsd", "openbsd":
+	// default:
+	// 	return errors.New("The Tailscale SSH server is not supported on " + runtime.GOOS)
+	// }
 	if !envknob.CanSSHD() {
 		return errors.New("The Tailscale SSH server has been administratively disabled.")
 	}
@@ -2786,15 +2788,15 @@ func (b *LocalBackend) peerAPIServicesLocked() (ret []tailcfg.Service) {
 			Port:  uint16(pln.port),
 		})
 	}
-	switch runtime.GOOS {
-	case "linux", "freebsd", "openbsd", "illumos", "darwin", "windows":
-		// These are the platforms currently supported by
-		// net/dns/resolver/tsdns.go:Resolver.HandleExitNodeDNSQuery.
-		ret = append(ret, tailcfg.Service{
-			Proto: tailcfg.PeerAPIDNS,
-			Port:  1, // version
-		})
-	}
+	// switch runtime.GOOS {
+	// case "linux", "freebsd", "openbsd", "illumos", "darwin", "windows":
+	// These are the platforms currently supported by
+	// net/dns/resolver/tsdns.go:Resolver.HandleExitNodeDNSQuery.
+	ret = append(ret, tailcfg.Service{
+		Proto: tailcfg.PeerAPIDNS,
+		Port:  1, // version
+	})
+	// }
 	return ret
 }
 
@@ -3373,10 +3375,10 @@ func (b *LocalBackend) routerConfig(cfg *wgcfg.Config, prefs ipn.PrefsView, oneC
 		Routes:           peerRoutes(cfg.Peers, singleRouteThreshold),
 	}
 
-	if distro.Get() == distro.Synology {
-		// Issue 1995: we don't use iptables on Synology.
-		rs.NetfilterMode = preftype.NetfilterOff
-	}
+	// if distro.Get() == distro.Synology {
+	// Issue 1995: we don't use iptables on Synology.
+	// rs.NetfilterMode = preftype.NetfilterOff
+	// }
 
 	// Sanity check: we expect the control server to program both a v4
 	// and a v6 default route, if default routing is on. Fill in
@@ -3407,17 +3409,17 @@ func (b *LocalBackend) routerConfig(cfg *wgcfg.Config, prefs ipn.PrefsView, oneC
 		if err != nil {
 			b.logf("failed to discover interface ips: %v", err)
 		}
-		if runtime.GOOS == "linux" || runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
-			rs.LocalRoutes = internalIPs // unconditionally allow access to guest VM networks
-			if prefs.ExitNodeAllowLANAccess() {
-				rs.LocalRoutes = append(rs.LocalRoutes, externalIPs...)
-			} else {
-				// Explicitly add routes to the local network so that we do not
-				// leak any traffic.
-				rs.Routes = append(rs.Routes, externalIPs...)
-			}
-			b.logf("allowing exit node access to local IPs: %v", rs.LocalRoutes)
+		// if runtime.GOOS == "linux" || runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
+		rs.LocalRoutes = internalIPs // unconditionally allow access to guest VM networks
+		if prefs.ExitNodeAllowLANAccess() {
+			rs.LocalRoutes = append(rs.LocalRoutes, externalIPs...)
+		} else {
+			// Explicitly add routes to the local network so that we do not
+			// leak any traffic.
+			rs.Routes = append(rs.Routes, externalIPs...)
 		}
+		b.logf("allowing exit node access to local IPs: %v", rs.LocalRoutes)
+		// }
 	}
 
 	if slices.ContainsFunc(rs.LocalAddrs, tsaddr.PrefixIs4) {

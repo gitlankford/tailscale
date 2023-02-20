@@ -50,9 +50,9 @@ import (
 	"tailscale.com/wgengine/magicsock"
 )
 
-const debugPackets = false
+// const debugPackets = false
 
-var debugNetstack = envknob.RegisterBool("TS_DEBUG_NETSTACK")
+// var debugNetstack = envknob.RegisterBool("TS_DEBUG_NETSTACK")
 
 var (
 	magicDNSIP   = tsaddr.TailscaleServiceIP()
@@ -394,9 +394,9 @@ func (ns *Impl) handleLocalPackets(p *packet.Parsed, t *tstun.Wrapper) filter.Re
 	case 6:
 		pn = header.IPv6ProtocolNumber
 	}
-	if debugPackets {
-		ns.logf("[v2] service packet in (from %v): % x", p.Src, p.Buffer())
-	}
+	// if debugPackets {
+	// 	ns.logf("[v2] service packet in (from %v): % x", p.Src, p.Buffer())
+	// }
 
 	packetBuf := stack.NewPacketBuffer(stack.PacketBufferOptions{
 		Payload: bufferv2.MakeWithData(bytes.Clone(p.Buffer())),
@@ -452,9 +452,9 @@ func (ns *Impl) inject() {
 			continue
 		}
 
-		if debugPackets {
-			ns.logf("[v2] packet Write out: % x", stack.PayloadSince(pkt.NetworkHeader()))
-		}
+		// if debugPackets {
+		// 	ns.logf("[v2] packet Write out: % x", stack.PayloadSince(pkt.NetworkHeader()))
+		// }
 
 		// In the normal case, netstack synthesizes the bytes for
 		// traffic which should transit back into WG and go to peers.
@@ -631,9 +631,9 @@ func (ns *Impl) userPing(dstIP netip.Addr, pingResPkt []byte) {
 		}
 		return
 	}
-	if debugNetstack() {
-		ns.logf("exec pinged %v in %v", dstIP, time.Since(t0))
-	}
+	// if debugNetstack() {
+	// 	ns.logf("exec pinged %v in %v", dstIP, time.Since(t0))
+	// }
 	if err := ns.tundev.InjectOutbound(pingResPkt); err != nil {
 		ns.logf("InjectOutbound ping response: %v", err)
 	}
@@ -677,9 +677,9 @@ func (ns *Impl) injectInbound(p *packet.Parsed, t *tstun.Wrapper) filter.Respons
 	case 6:
 		pn = header.IPv6ProtocolNumber
 	}
-	if debugPackets {
-		ns.logf("[v2] packet in (from %v): % x", p.Src, p.Buffer())
-	}
+	// if debugPackets {
+	// 	ns.logf("[v2] packet in (from %v): % x", p.Src, p.Buffer())
+	// }
 	packetBuf := stack.NewPacketBuffer(stack.PacketBufferOptions{
 		Payload: bufferv2.MakeWithData(bytes.Clone(p.Buffer())),
 	})
@@ -762,9 +762,9 @@ func netaddrIPFromNetstackIP(s tcpip.Address) netip.Addr {
 
 func (ns *Impl) acceptTCP(r *tcp.ForwarderRequest) {
 	reqDetails := r.ID()
-	if debugNetstack() {
-		ns.logf("[v2] TCP ForwarderRequest: %s", stringifyTEI(reqDetails))
-	}
+	// if debugNetstack() {
+	// 	ns.logf("[v2] TCP ForwarderRequest: %s", stringifyTEI(reqDetails))
+	// }
 	clientRemoteIP := netaddrIPFromNetstackIP(reqDetails.RemoteAddress)
 	if !clientRemoteIP.IsValid() {
 		ns.logf("invalid RemoteAddress in TCP ForwarderRequest: %s", stringifyTEI(reqDetails))
@@ -915,30 +915,30 @@ func (ns *Impl) acceptTCP(r *tcp.ForwarderRequest) {
 
 func (ns *Impl) forwardTCP(getClient func(...tcpip.SettableSocketOption) *gonet.TCPConn, clientRemoteIP netip.Addr, wq *waiter.Queue, dialAddr netip.AddrPort) (handled bool) {
 	dialAddrStr := dialAddr.String()
-	if debugNetstack() {
-		ns.logf("[v2] netstack: forwarding incoming connection to %s", dialAddrStr)
-	}
+	// if debugNetstack() {
+	// 	ns.logf("[v2] netstack: forwarding incoming connection to %s", dialAddrStr)
+	// }
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	waitEntry, notifyCh := waiter.NewChannelEntry(waiter.EventHUp) // TODO(bradfitz): right EventMask?
-	wq.EventRegister(&waitEntry)
-	defer wq.EventUnregister(&waitEntry)
-	done := make(chan bool)
+	// waitEntry, notifyCh := waiter.NewChannelEntry(waiter.EventHUp) // TODO(bradfitz): right EventMask?
+	// wq.EventRegister(&waitEntry)
+	// defer wq.EventUnregister(&waitEntry)
+	// done := make(chan bool)
 	// netstack doesn't close the notification channel automatically if there was no
 	// hup signal, so we close done after we're done to not leak the goroutine below.
-	defer close(done)
-	go func() {
-		select {
-		case <-notifyCh:
-			if debugNetstack() {
-				ns.logf("[v2] netstack: forwardTCP notifyCh fired; canceling context for %s", dialAddrStr)
-			}
-		case <-done:
-		}
-		cancel()
-	}()
+	// defer close(done)
+	// go func() {
+	// select {
+	// case <-notifyCh:
+	// 	if debugNetstack() {
+	// 		ns.logf("[v2] netstack: forwardTCP notifyCh fired; canceling context for %s", dialAddrStr)
+	// 	}
+	// case <-done:
+	// }
+	// cancel()
+	// }()
 
 	// Attempt to dial the outbound connection before we accept the inbound one.
 	var stdDialer net.Dialer
@@ -985,9 +985,9 @@ func (ns *Impl) forwardTCP(getClient func(...tcpip.SettableSocketOption) *gonet.
 
 func (ns *Impl) acceptUDP(r *udp.ForwarderRequest) {
 	sess := r.ID()
-	if debugNetstack() {
-		ns.logf("[v2] UDP ForwarderRequest: %v", stringifyTEI(sess))
-	}
+	// if debugNetstack() {
+	// 	ns.logf("[v2] UDP ForwarderRequest: %v", stringifyTEI(sess))
+	// }
 	var wq waiter.Queue
 	ep, err := r.CreateEndpoint(&wq)
 	if err != nil {
@@ -1064,9 +1064,9 @@ func (ns *Impl) handleMagicDNSUDP(srcAddr netip.AddrPort, c *gonet.UDPConn) {
 // proxy to it directly.
 func (ns *Impl) forwardUDP(client *gonet.UDPConn, wq *waiter.Queue, clientAddr, dstAddr netip.AddrPort) {
 	port, srcPort := dstAddr.Port(), clientAddr.Port()
-	if debugNetstack() {
-		ns.logf("[v2] netstack: forwarding incoming UDP connection on port %v", port)
-	}
+	// if debugNetstack() {
+	// 	ns.logf("[v2] netstack: forwarding incoming UDP connection on port %v", port)
+	// }
 
 	var backendListenAddr *net.UDPAddr
 	var backendRemoteAddr *net.UDPAddr
@@ -1140,9 +1140,9 @@ func (ns *Impl) forwardUDP(client *gonet.UDPConn, wq *waiter.Queue, clientAddr, 
 }
 
 func startPacketCopy(ctx context.Context, cancel context.CancelFunc, dst net.PacketConn, dstAddr net.Addr, src net.PacketConn, logf logger.Logf, extend func()) {
-	if debugNetstack() {
-		logf("[v2] netstack: startPacketCopy to %v (%T) from %T", dstAddr, dst, src)
-	}
+	// if debugNetstack() {
+	// 	logf("[v2] netstack: startPacketCopy to %v (%T) from %T", dstAddr, dst, src)
+	// }
 	go func() {
 		defer cancel() // tear down the other direction's copy
 		pkt := make([]byte, maxUDPPacketSize)
@@ -1165,9 +1165,9 @@ func startPacketCopy(ctx context.Context, cancel context.CancelFunc, dst net.Pac
 					}
 					return
 				}
-				if debugNetstack() {
-					logf("[v2] wrote UDP packet %s -> %s", srcAddr, dstAddr)
-				}
+				// if debugNetstack() {
+				// 	logf("[v2] wrote UDP packet %s -> %s", srcAddr, dstAddr)
+				// }
 				extend()
 			}
 		}

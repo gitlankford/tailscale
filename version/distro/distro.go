@@ -5,13 +5,13 @@
 package distro
 
 import (
-	"bytes"
-	"io"
+	// "bytes"
+	// "io"
 	"os"
-	"strconv"
+	// "strconv"
 
 	"tailscale.com/types/lazy"
-	"tailscale.com/util/lineread"
+	// "tailscale.com/util/lineread"
 )
 
 type Distro string
@@ -103,30 +103,30 @@ var dsmVersion lazy.SyncValue[int]
 // If not Synology, it reports 0.
 func DSMVersion() int {
 	// if runtime.GOOS != "linux" {
-	// 	return 0
+	return 0
 	// }
-	return dsmVersion.Get(func() int {
-		if Get() != Synology {
-			return 0
-		}
-		// This is set when running as a package:
-		v, _ := strconv.Atoi(os.Getenv("SYNOPKG_DSM_VERSION_MAJOR"))
-		if v != 0 {
-			return v
-		}
-		// But when run from the command line, we have to read it from the file:
-		lineread.File("/etc/VERSION", func(line []byte) error {
-			line = bytes.TrimSpace(line)
-			if string(line) == `majorversion="7"` {
-				v = 7
-				return io.EOF
-			}
-			if string(line) == `majorversion="6"` {
-				v = 6
-				return io.EOF
-			}
-			return nil
-		})
-		return v
-	})
+	// return dsmVersion.Get(func() int {
+	// if Get() != Synology {
+	// return 0
+	// }
+	// This is set when running as a package:
+	// v, _ := strconv.Atoi(os.Getenv("SYNOPKG_DSM_VERSION_MAJOR"))
+	// if v != 0 {
+	// 	return v
+	// }
+	// But when run from the command line, we have to read it from the file:
+	// lineread.File("/etc/VERSION", func(line []byte) error {
+	// 	line = bytes.TrimSpace(line)
+	// 	if string(line) == `majorversion="7"` {
+	// 		v = 7
+	// 		return io.EOF
+	// 	}
+	// 	if string(line) == `majorversion="6"` {
+	// 		v = 6
+	// 		return io.EOF
+	// 	}
+	// 	return nil
+	// })
+	// return v
+	// })
 }
